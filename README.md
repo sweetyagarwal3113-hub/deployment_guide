@@ -94,10 +94,13 @@ Port              : 3000
 
 ---
 
-### Step 5: Server Restart & Verification
+### Step 5: Server Restart, Live Logs & Final Verification
 1. Navigate back to the **Node.js** tab in mPanel.
-2. Click **Restart Server** to apply all configuration changes and spawn your Node.js app instance.
-3. Visit your website URL in the browser to verify full functionality.
+2. Click **Restart Server** (or **Deploy**) to apply all configuration changes and spawn your Node.js app instance.
+3. **Monitor Live Logs:** Check the built-in log console box directly below your deployment entry in the Node.js tab. All startup parameters (`PersistentApp`), NVM loading status, `stdout`, and `stderr` runtime logs stream live in this box.
+4. Visit your website URL in the browser to verify full functionality.
+
+> 📋 **Log Viewing Note:** mPanel provides an integrated log viewer box directly underneath your deployment row in the Node.js tab for instant debugging of startup issues or server errors.
 
 ---
 

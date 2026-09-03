@@ -569,14 +569,22 @@
       <div class="step-card">
         <div class="step-header">
           <div class="step-number">5</div>
-          <div class="step-title">Server Restart & Final Verification</div>
+          <div class="step-title">Server Restart, Logs & Verification</div>
         </div>
         <div class="step-content">
           <ul class="step-list">
             <li>Return to the <strong>Node.js</strong> tab inside your mPanel control panel.</li>
-            <li>Click the <strong>Restart Server</strong> button to apply changes and spawn the application instance.</li>
-            <li>Visit your domain URL in the browser to verify site functionality.</li>
+            <li>Click the <strong>Restart Server</strong> (or <strong>Deploy</strong>) button to apply changes and spawn the application instance.</li>
+            <li><strong>Check Live Application Logs:</strong> Inspect live <code>stdout</code> and <code>stderr</code> logs directly in the built-in log console box below your deployment row to verify NVM loading and app startup.</li>
+            <li>Visit your domain URL in the browser to verify full site functionality.</li>
           </ul>
+
+          <div class="callout callout-info" style="margin-top: 1rem;">
+            <span class="callout-icon">📋</span>
+            <div class="callout-body">
+              <strong>Integrated Log Console:</strong> mPanel features a built-in application log viewer directly underneath your deployment entry in the Node.js tab. Startup parameters, NVM version checks, runtime logs, and crash errors are streamed live into this box for easy troubleshooting.
+            </div>
+          </div>
 
           <div class="callout callout-success">
             <span class="callout-icon">🎉</span>
