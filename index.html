@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mPanel Deployment Guide - Node.js & Frontend</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #0b0f19;
+      --bg-gradient-end: #111827;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #0d1117;
+      --badge-blue: rgba(59, 130, 246, 0.15);
+      --badge-green: rgba(16, 185, 129, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Header Styling */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2.5rem 1.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-cyan), transparent);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      background: var(--badge-blue);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--accent-cyan);
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Quick Specs Summary Bar */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .spec-card {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .spec-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .spec-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toggle-on {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      background: #2563eb;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Timeline & Steps */
+    .steps-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .step-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .step-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 1rem;
+    }
+
+    .step-number {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .step-content {
+      color: var(--text-main);
+    }
+
+    /* Table styling for Node.js config */
+    .config-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 1rem;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .config-table th, .config-table td {
+      padding: 0.85rem 1.2rem;
+      text-align: left;
+    }
+
+    .config-table th {
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--accent-cyan);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .config-table tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .config-table tr:nth-child(odd) {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .config-table td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.95rem;
+    }
+
+    .config-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .value-highlight {
+      font-family: 'Fira Code', monospace;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    /* Directory Tree Visualization */
+    .tree-box {
+      background: var(--code-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 1.25rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-top: 1rem;
+      line-height: 1.7;
+    }
+
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tree-folder {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    .tree-file {
+      color: #60a5fa;
+    }
+
+    .tree-desc {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Callout & Alert boxes */
+    .callout {
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .callout-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+
+    .callout-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .callout-info {
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 4px solid var(--accent-blue);
+      color: #93c5fd;
+    }
+
+    .callout-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 4px solid var(--accent-amber);
+      color: #fde68a;
+    }
+
+    .callout-success {
+      background: rgba(16, 185, 129, 0.1);
+      border-left: 4px solid var(--accent-emerald);
+      color: #6ee7b7;
+    }
+
+    /* List items styling */
+    .step-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .step-list li {
+      position: relative;
+      padding-left: 1.75rem;
+    }
+
+    .step-list li::before {
+      content: '➔';
+      position: absolute;
+      left: 0;
+      color: var(--accent-cyan);
+      font-size: 0.9rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      .step-card {
+        padding: 1.25rem;
+      }
+      .config-table th, .config-table td {
+        padding: 0.6rem 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER SECTION -->
+    <header>
+      <div class="badge">mPanel Hosting Documentation</div>
+      <h1>Complete Web Application Deployment Guide</h1>
+      <p class="subtitle">Step-by-step instructions for deploying a Next.js / Node.js Backend & Static Frontend on mPanel server architecture.</p>
+    </header>
+
+    <!-- QUICK REFERENCE SUMMARY CARD -->
+    <div class="specs-grid">
+      <div class="spec-card">
+        <span class="spec-label">Node Version</span>
+        <span class="spec-value">20.20.2 <span style="font-size: 0.75rem; color: var(--text-muted);">(or latest)</span></span>
+      </div>
+      <div class="spec-card">
+        <span class="spec-label">App Mode</span>
+        <span class="spec-value">Automatic</span>
+      </div>
+      <div class="spec-card">
+        <span class="spec-label">Proxy Enabled</span>
+        <span class="spec-value">ON <span class="toggle-on">BLUE</span></span>
+      </div>
+      <div class="spec-card">
+        <span class="spec-label">Port / Path</span>
+        <span class="spec-value">3000 / <span class="value-highlight">/</span></span>
+      </div>
+    </div>
+
+    <!-- MAIN STEPS SECTION -->
+    <div class="steps-wrapper">
+
+      <!-- STEP 1 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <div class="step-title">My Website Setup & Domain Addition</div>
+        </div>
+        <div class="step-content">
+          <p style="margin-bottom: 1rem;">Begin by registering your domain into the mPanel management console:</p>
+          <ul class="step-list">
+            <li>Navigate to <strong>My Website</strong> section from the main navigation dashboard.</li>
+            <li>Click on <strong>Add Website</strong> button.</li>
+            <li>Write your target domain name in the input field (e.g., <code>example.com</code> or <code>subdomain.example.com</code>).</li>
+          </ul>
+          <div class="callout callout-info">
+            <span class="callout-icon">💡</span>
+            <div class="callout-body">
+              <strong>Tip:</strong> Ensure your domain's DNS A-record is properly pointed to your mPanel server IP address before proceeding.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <div class="step-title">Node.js Application Configuration</div>
+        </div>
+        <div class="step-content">
+          <p>Configure the Node.js runtime environment parameters in mPanel as follows:</p>
+          
+          <table class="config-table">
+            <thead>
+              <tr>
+                <th>Setting Parameter</th>
+                <th>Required Configuration / Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Application Mode</strong></td>
+                <td><span class="value-highlight">Automatic (Production)</span></td>
+              </tr>
+              <tr>
+                <td><strong>Node Version</strong></td>
+                <td><span class="value-highlight">20.20.2</span> <em>(or latest recommended LTS version)</em></td>
+              </tr>
+              <tr>
+                <td><strong>Startup Command</strong></td>
+                <td><span class="value-highlight">npm start</span></td>
+              </tr>
+              <tr>
+                <td><strong>Working Directory</strong></td>
+                <td><span class="value-highlight">backend</span></td>
+              </tr>
+              <tr>
+                <td><strong>Proxy Enabled</strong></td>
+                <td><span class="toggle-on">ON</span> <em>(Ensure the Blue Toggle switch is active)</em></td>
+              </tr>
+              <tr>
+                <td><strong>Path</strong></td>
+                <td><span class="value-highlight">/</span> <em>(Leave BLANK)</em></td>
+              </tr>
+              <tr>
+                <td><strong>Port</strong></td>
+                <td><span class="value-highlight">3000</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">3</div>
+          <div class="step-title">Frontend Deployment (public_html)</div>
+        </div>
+        <div class="step-content">
+          <p style="margin-bottom: 0.75rem;">Build and publish compiled static assets to the standard web root:</p>
+          
+          <ul class="step-list">
+            <li>Run command in your local frontend project directory: <span class="value-highlight">npm run build</span></li>
+            <li>Zip the output compiled contents (<strong>zip the contents inside the <code>dist/</code> folder</strong>, NOT the <code>dist</code> directory itself).</li>
+            <li>Upload the zipped bundle and extract all files/folders inside the <span class="value-highlight">public_html</span> directory.</li>
+          </ul>
+
+          <div class="tree-box">
+            <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.5rem;">📂 public_html Directory Structure (Extracted Contents of dist):</div>
+            <div class="tree-item"><span class="tree-folder">📁 public_html/</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 index.html</span> <span class="tree-desc">(main compiled entry point)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-folder">📁 assets/</span> <span class="tree-desc">(compiled CSS, JS, fonts & static media)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 ...</span> <span class="tree-desc">(all other compiled dist files & images)</span></div>
+          </div>
+
+          <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-body">
+              <strong>Important Zipping Rule:</strong> Select and zip the files/folders <em>inside</em> the <code>dist/</code> directory (e.g., <code>index.html</code>, <code>assets/</code>, etc.) rather than zipping the parent <code>dist</code> folder itself. This ensures <code>index.html</code> lands directly in the root of <code>public_html/</code> upon extraction.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">4</div>
+          <div class="step-title">Backend Deployment (backend folder)</div>
+        </div>
+        <div class="step-content">
+          <p style="margin-bottom: 0.75rem;">Set up the backend Node.js application directory:</p>
+
+          <ul class="step-list">
+            <li>Create a folder named <span class="value-highlight">backend</span> directly in the root directory (<strong>outside</strong> of <code>public_html</code>).</li>
+            <li>In your local backend codebase, execute: <span class="value-highlight">npm run build</span></li>
+            <li>Compress (zip) and upload all essential server files and dependencies into the <code>backend/</code> folder.</li>
+          </ul>
+
+          <div class="tree-box">
+            <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.5rem;">📁 backend/ Directory Content Checklist:</div>
+            <div class="tree-item"><span class="tree-folder">📁 backend/</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-folder">📁 node_modules/</span> <span class="tree-desc">(production dependencies)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-folder">📁 .next/</span> <span class="tree-desc">(compiled Next.js build output)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 server.js</span> <span class="tree-desc">(main server entrypoint)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 package.json</span> <span class="tree-desc">(manifest with "npm start" script)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 .env</span> <span class="tree-desc">(environment configuration variables)</span></div>
+          </div>
+
+          <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-body">
+              <strong>Important:</strong> Ensure the <code>.next</code> hidden folder and hidden dotfiles like <code>.env</code> are explicitly included in your zip file before uploading.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">5</div>
+          <div class="step-title">Server Restart & Final Verification</div>
+        </div>
+        <div class="step-content">
+          <ul class="step-list">
+            <li>Return to the <strong>Node.js</strong> tab inside your mPanel control panel.</li>
+            <li>Click the <strong>Restart Server</strong> button to apply changes and spawn the application instance.</li>
+            <li>Visit your domain URL in the browser to verify site functionality.</li>
+          </ul>
+
+          <div class="callout callout-success">
+            <span class="callout-icon">🎉</span>
+            <div class="callout-body">
+              <strong>Verification Complete:</strong> If configured correctly, your proxy routes requests smoothly between the public frontend assets and the backend Node.js service running on port 3000.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>mPanel Deployment Guide Documentation</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
