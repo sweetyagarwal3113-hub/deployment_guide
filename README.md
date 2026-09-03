@@ -76,12 +76,17 @@ Port              : 3000
 
 ```text
 📁 backend/ Directory Structure
-├── 📁 node_modules/     (Production dependencies)
-├── 📁 .next/            (Compiled Next.js build output)
-├── 📄 server.js         (Main server entrypoint)
-├── 📄 package.json      (Manifest containing "npm start")
-└── 📄 .env              (Environment configuration variables)
+├── 📁 node_modules/     (REQUIRED: production dependencies for npm start)
+├── 📁 .next/            (REQUIRED: compiled Next.js build output)
+├── 📄 server.js         (REQUIRED: main server entrypoint)
+├── 📄 package.json      (REQUIRED: manifest with "npm start" script)
+├── 📄 .env              (REQUIRED: environment configuration variables)
+└── ❌ src/              (NOT NEEDED: source code is compiled inside .next/)
 ```
+
+> 💡 **`node_modules/` vs `src/` Rule:**
+> - **Include `node_modules/`:** **YES.** Needed so Node.js can run dependencies on application startup.
+> - **Exclude `src/`:** **NO.** Do not upload `src/`. All TypeScript/React code is compiled into `.next/`. Skipping `src/` saves bandwidth and protects your source code.
 
 > ⚠️ **Important Environment & Zip Note:** mPanel does **not** feature a separate Environment Variables UI section in the control panel. You **must upload your `.env` file directly inside the `backend/` folder**. Ensure hidden folders/files such as `.next/` and `.env` are explicitly included in your zip file before uploading.
 
