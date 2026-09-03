@@ -94,15 +94,46 @@ Port              : 3000
 
 ---
 
-## 🌐 Local Preview
+## 🌐 How to Run & Preview the Guide Locally
 
-To view the interactive HTML guide locally:
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/sweetyagarwal3113-hub/deployment_guide.git
-   cd deployment_guide
-   ```
-2. Open `index.html` directly in your browser or run a simple local web server.
+You can preview the interactive `index.html` deployment guide locally using any of the following commands:
+
+### Option 1: Direct Browser Launch (Quickest)
+
+* **Windows (PowerShell):**
+  ```powershell
+  Start-Process "index.html"
+  ```
+* **macOS:**
+  ```bash
+  open index.html
+  ```
+* **Linux:**
+  ```bash
+  xdg-open index.html
+  ```
+
+---
+
+### Option 2: Run Local Web Server
+
+* **Using Node.js (`http-server`):**
+  ```bash
+  npx -y http-server -p 8080
+  ```
+  *Then open: [http://localhost:8080](http://localhost:8080)*
+
+* **Using Python:**
+  ```bash
+  python -m http.server 8080
+  ```
+  *Then open: [http://localhost:8080](http://localhost:8080)*
+
+* **Using PowerShell (No external dependencies):**
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File tcp_server.ps1
+  ```
+  *Then open: [http://localhost:8080](http://localhost:8080)*
 
 ---
 
