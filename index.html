@@ -537,6 +537,7 @@
             <div class="tree-item"><span class="tree-folder">📁 backend/</span></div>
             <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-folder">📁 node_modules/</span> <span class="tree-desc">(REQUIRED: production dependencies for npm start)</span></div>
             <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-folder">📁 .next/</span> <span class="tree-desc">(REQUIRED: compiled Next.js build output)</span></div>
+            <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-folder">📁 public/</span> <span class="tree-desc">(INCLUDE IF USED: static images, favicon, media files)</span></div>
             <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 server.js</span> <span class="tree-desc">(REQUIRED: main server entrypoint)</span></div>
             <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 package.json</span> <span class="tree-desc">(REQUIRED: manifest with "npm start" script)</span></div>
             <div class="tree-item" style="padding-left: 1.5rem;"><span class="tree-file">📄 .env</span> <span class="tree-desc">(REQUIRED: environment configuration variables)</span></div>
@@ -549,6 +550,7 @@
               <strong>What to Include vs Exclude:</strong>
               <ul style="margin-left: 1.25rem; margin-top: 0.25rem;">
                 <li><strong>Include <code>node_modules/</code>:</strong> Yes, required so the Node.js server can load dependencies on startup.</li>
+                <li><strong>Include <code>public/</code>:</strong> Yes (if used). Required if your backend serves static assets, images, icons, or uploaded media files directly.</li>
                 <li><strong>Exclude <code>src/</code>:</strong> No need to upload <code>src/</code> folder. All React/TypeScript code is already compiled into <code>.next/</code>. Excluding <code>src/</code> saves space and protects your raw source code.</li>
               </ul>
             </div>
