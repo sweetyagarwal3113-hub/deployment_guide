@@ -83,7 +83,7 @@ Port              : 3000
 └── 📄 .env              (Environment configuration variables)
 ```
 
-> ⚠️ **Important:** Ensure hidden folders/files such as `.next/` and `.env` are included in your upload zip.
+> ⚠️ **Important Environment & Zip Note:** mPanel does **not** feature a separate Environment Variables UI section in the control panel. You **must upload your `.env` file directly inside the `backend/` folder**. Ensure hidden folders/files such as `.next/` and `.env` are explicitly included in your zip file before uploading.
 
 ---
 
