@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Worker & Storage Technical Guide - PWA, Cache API & Web Storage Ecosystem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #080c14;
+      --bg-gradient-end: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(245, 158, 11, 0.4);
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-red: #ef4444;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #0d1117;
+      --badge-amber: rgba(245, 158, 11, 0.15);
+      --badge-emerald: rgba(16, 185, 129, 0.15);
+      --badge-cyan: rgba(6, 182, 212, 0.15);
+      --badge-purple: rgba(139, 92, 246, 0.15);
+      --badge-pink: rgba(236, 72, 153, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 12, 20, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 1.5rem;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-amber), #ea580c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(30, 41, 59, 0.5);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: #fff;
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .nav-btn.hub-link {
+      background: rgba(59, 130, 246, 0.25);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #fff;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Hero Header */
+    header.hero {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+    }
+
+    header.hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-amber), var(--accent-emerald), var(--accent-cyan), transparent);
+    }
+
+    .hero-badge-group {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-amber { background: var(--badge-amber); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-amber); }
+    .badge-emerald { background: var(--badge-emerald); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-emerald); }
+    .badge-cyan { background: var(--badge-cyan); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--accent-cyan); }
+    .badge-purple { background: var(--badge-purple); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); }
+    .badge-pink { background: var(--badge-pink); border: 1px solid rgba(236, 72, 153, 0.3); color: var(--accent-pink); }
+
+    h1.hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.75rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-amber) 70%, #ea580c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    p.hero-subtitle {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Card Box */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      scroll-margin-top: 5rem;
+    }
+
+    .card:hover {
+      border-color: var(--card-border-hover);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Content Typography */
+    p { color: var(--text-main); margin-bottom: 1rem; font-size: 0.98rem; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.4rem; color: var(--text-main); }
+    strong { color: #fff; }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      color: var(--accent-amber);
+    }
+
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88rem;
+      color: #e6edf3;
+      overflow-x: auto;
+      margin: 1rem 0;
+      line-height: 1.5;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fff;
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.1rem;
+      margin: 1rem 0;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent-amber);
+      background: rgba(245, 158, 11, 0.08);
+      border-radius: 0 12px 12px 0;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+    }
+
+    .callout-info {
+      border-left-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.08);
+    }
+
+    .callout-warning {
+      border-left-color: var(--accent-pink);
+      background: rgba(236, 72, 153, 0.08);
+    }
+
+    /* Diagram Box */
+    .diagram-box {
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem 1rem;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .diagram-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .diagram-node {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--accent-amber);
+      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+    }
+
+    .diagram-arrow { font-size: 1.4rem; color: var(--accent-amber); font-weight: 800; }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      background: rgba(13, 17, 23, 0.6);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--accent-amber);
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid var(--card-border);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tr:hover {
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .tag-yes { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.4); }
+    .tag-no { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
+    .tag-async { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.4); }
+    .tag-sync { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    @media (max-width: 768px) {
+      h1.hero-title { font-size: 2rem; }
+      .container { padding: 0 1rem; }
+      .diagram-flow { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <div class="nav-container">
+      <a href="learning.html" class="brand">
+        <div class="brand-icon">⚙️</div>
+        Service Worker & Storage Guide
+      </a>
+      <div class="nav-links">
+        <a href="learning.html" class="nav-btn hub-link">📚 Learning Hub</a>
+        <a href="#concept-workers" class="nav-btn">💡 Concept & Workers</a>
+        <a href="#lifecycle" class="nav-btn">🔄 Lifecycle</a>
+        <a href="#cache-api" class="nav-btn">💾 Cache API</a>
+        <a href="#strategies" class="nav-btn">⚡ Caching Strategies</a>
+        <a href="#storage-ecosystem" class="nav-btn">🗄️ Web Storage Ecosystem</a>
+        <a href="#capabilities" class="nav-btn">🔔 Capabilities</a>
+        <a href="#gotchas" class="nav-btn">⚠️ Pitfalls & Gotchas</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Hero Header -->
+    <header class="hero">
+      <div class="hero-badge-group">
+        <span class="badge badge-amber">⚙️ Web Workers API</span>
+        <span class="badge badge-emerald">📶 Offline PWA</span>
+        <span class="badge badge-cyan">💾 Cache API & Storage</span>
+        <span class="badge badge-purple">🗄️ Storage Ecosystem</span>
+        <span class="badge badge-pink">🔔 Push & Sync</span>
+      </div>
+      <h1 class="hero-title">Service Worker & Browser Storage Architecture</h1>
+      <p class="hero-subtitle">
+        A deep-dive technical reference on <strong>Service Workers</strong>, event-driven network proxies, <strong>Cache Storage API</strong>, offline PWAs, and the complete <strong>Client-Side Storage Ecosystem</strong> (<code>Cache Storage</code>, <code>IndexedDB</code>, <code>sessionStorage</code>, <code>localStorage</code>, <code>Cookies</code>, <code>OPFS</code>).
+      </p>
+    </header>
+
+    <!-- SECTION 1: WHAT IS A SERVICE WORKER & WORKER THREAD COMPARISON -->
+    <div class="card" id="concept-workers">
+      <h3 class="card-title">💡 What is a Service Worker?</h3>
+      <p>
+        A <strong>Service Worker</strong> is an event-driven JavaScript script that runs in a browser background thread completely separate from the web page's main UI thread (DOM).
+      </p>
+      <p>
+        It acts as a <strong>programmable network proxy</strong> sitting between your frontend web application, the browser's <code>Cache Storage</code>, and the network/server. It intercepts outgoing HTTP network requests, serves responses directly from cache when offline, processes background sync requests, and listens for server push notifications.
+      </p>
+
+      <!-- Diagram -->
+      <div class="diagram-box">
+        <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem;">SERVICE WORKER PROXY PIPELINE</h4>
+        <div class="diagram-flow">
+          <div class="diagram-node" style="border-color: var(--accent-cyan);">
+            WEB APPLICATION (DOM Thread)
+          </div>
+          <div class="diagram-arrow">⇄</div>
+          <div class="diagram-node" style="border-color: var(--accent-amber); background: rgba(245, 158, 11, 0.2);">
+            SERVICE WORKER PROXY
+          </div>
+          <div class="diagram-arrow">⇄</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="diagram-node" style="border-color: var(--accent-emerald);">CACHE STORAGE / INDEXEDDB</div>
+            <div class="diagram-node" style="border-color: var(--accent-purple);">NETWORK / SERVER</div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="color: #fff; margin: 1.5rem 0 0.75rem 0; font-family: 'Outfit', sans-serif;">Comparing Browser Worker Threads</h4>
+      <p>Browsers provide distinct worker types for offloading work from the main thread:</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Worker Type</th>
+              <th>Global Scope</th>
+              <th>DOM Access</th>
+              <th>Lifespan</th>
+              <th>Network Proxy (`fetch`)</th>
+              <th>Primary Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Main Thread</strong></td>
+              <td><code>Window</code></td>
+              <td><span class="tag tag-yes">YES</span></td>
+              <td>Tab duration</td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td>UI rendering, layout, user interaction event handling</td>
+            </tr>
+            <tr>
+              <td><strong>Web Worker (Dedicated)</strong></td>
+              <td><code>DedicatedWorkerGlobalScope</code></td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td>Script execution duration</td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td>Heavy computational tasks (CPU tasks, data sorting, image processing)</td>
+            </tr>
+            <tr>
+              <td><strong>Shared Worker</strong></td>
+              <td><code>SharedWorkerGlobalScope</code></td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td>Active connection count &gt; 0</td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td>State sharing & communication across multiple tabs/windows of same origin</td>
+            </tr>
+            <tr>
+              <td><strong>Service Worker</strong></td>
+              <td><code>ServiceWorkerGlobalScope</code></td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td>Event-driven (starts/stops automatically)</td>
+              <td><span class="tag tag-yes">YES</span></td>
+              <td>Network proxying, offline caching, push notifications, background sync</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 2: SERVICE WORKER LIFECYCLE -->
+    <div class="card" id="lifecycle">
+      <h3 class="card-title">🔄 Service Worker Lifecycle (4 Phases)</h3>
+      <p>Understanding the lifecycle is crucial to preventing stale cache traps and unexpected script behavior:</p>
+
+      <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+        
+        <!-- Phase 1 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-cyan); margin-bottom: 0.35rem;">Phase 1: Registration</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Executed by main thread JavaScript in your app (e.g. <code>app.js</code>):</p>
+          <div class="code-block" style="margin: 0.5rem 0 0 0;">
+            <div class="code-header"><span>main.js</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then(registration => console.log('SW Registered with scope:', registration.scope))
+      .catch(err => console.error('SW Registration Failed:', err));
+  });
+}</pre>
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-amber); margin-bottom: 0.35rem;">Phase 2: Installation (`install` event)</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Triggered when a new SW file is detected by the browser. Ideal for precaching core static App Shell assets:</p>
+          <div class="code-block" style="margin: 0.5rem 0 0 0;">
+            <div class="code-header"><span>sw.js</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>const CACHE_NAME = 'app-shell-v1';
+const ASSETS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/styles.css',
+  '/app.js',
+  '/offline.html',
+  '/logo.svg'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[SW] Precaching App Shell assets');
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
+  self.skipWaiting(); // Bypass waiting state and force new SW to activate immediately
+});</pre>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-emerald); margin-bottom: 0.35rem;">Phase 3: Activation (`activate` event)</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Triggered when the new SW takes active control of pages. Ideal for purging obsolete cache versions:</p>
+          <div class="code-block" style="margin: 0.5rem 0 0 0;">
+            <div class="code-header"><span>sw.js</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            console.log('[SW] Purging old cache:', cache);
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
+  );
+  return self.clients.claim(); // Take control of all existing open browser tabs immediately
+});</pre>
+          </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-purple); margin-bottom: 0.35rem;">Phase 4: Idle & Termination (Event-Driven Wakeup)</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            To conserve RAM and CPU, browsers shut down idle Service Workers after ~30 seconds of inactivity. The Service Worker automatically wakes up when triggered by events like <code>fetch</code>, <code>push</code>, or <code>sync</code>.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 3: CACHE API DEEP DIVE -->
+    <div class="card" id="cache-api">
+      <h3 class="card-title">💾 Cache API & CacheStorage Deep Dive</h3>
+      <p>
+        The <strong>Cache API</strong> (<code>CacheStorage</code>) is a key-value storage mechanism designed to store <code>Request</code> and <code>Response</code> HTTP object pairs. It is accessible via <code>window.caches</code> in main scripts and <code>self.caches</code> inside Service Workers.
+      </p>
+
+      <h4 style="color: #fff; margin: 1.25rem 0 0.5rem 0; font-family: 'Outfit', sans-serif;">Core CacheStorage & Cache Methods</h4>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Description</th>
+              <th>Code Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>caches.open(name)</code></td>
+              <td>Opens an existing cache or creates a new one with the given name. Returns a Promise resolving to <code>Cache</code> object.</td>
+              <td><code>const cache = await caches.open('v1-cache');</code></td>
+            </tr>
+            <tr>
+              <td><code>cache.add(request)</code></td>
+              <td>Fetches a single URL from the network and stores the resulting HTTP Response in cache.</td>
+              <td><code>await cache.add('/styles.css');</code></td>
+            </tr>
+            <tr>
+              <td><code>cache.addAll(requests)</code></td>
+              <td>Fetches an array of URLs from network and stores all responses atomically. If any request fails, none are cached.</td>
+              <td><code>await cache.addAll(['/', '/app.js']);</code></td>
+            </tr>
+            <tr>
+              <td><code>cache.put(req, res)</code></td>
+              <td>Manually stores a custom <code>Response</code> object for a specific <code>Request</code> key without sending a new fetch request.</td>
+              <td><code>await cache.put(event.request, networkResponse.clone());</code></td>
+            </tr>
+            <tr>
+              <td><code>cache.match(req, options)</code></td>
+              <td>Searches for a matching cached response for a given request. Returns <code>Response</code> or <code>undefined</code>.</td>
+              <td><code>const response = await cache.match(event.request);</code></td>
+            </tr>
+            <tr>
+              <td><code>cache.delete(req)</code></td>
+              <td>Deletes an individual request/response entry from the cache.</td>
+              <td><code>await cache.delete('/old-logo.png');</code></td>
+            </tr>
+            <tr>
+              <td><code>caches.delete(name)</code></td>
+              <td>Deletes an entire named cache bucket.</td>
+              <td><code>await caches.delete('v1-cache');</code></td>
+            </tr>
+            <tr>
+              <td><code>caches.keys()</code></td>
+              <td>Returns names of all cache buckets for the origin.</td>
+              <td><code>const keys = await caches.keys();</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="color: #fff; margin: 1.5rem 0 0.5rem 0; font-family: 'Outfit', sans-serif;">Storage Quota & Inspection</h4>
+      <p>Cache storage limits depend on available device storage space (usually up to 60-80% of total free disk space per origin). You can query remaining space using the StorageManager API:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span>storage_quota.js</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>if ('storage' in navigator && 'estimate' in navigator.storage) {
+  navigator.storage.estimate().then(({ quota, usage }) => {
+    const quotaMB = (quota / (1024 * 1024)).toFixed(2);
+    const usageMB = (usage / (1024 * 1024)).toFixed(2);
+    const percentUsed = ((usage / quota) * 100).toFixed(2);
+    console.log(`Storage used: ${usageMB} MB of ${quotaMB} MB (${percentUsed}%)`);
+  });
+}</pre>
+      </div>
+    </div>
+
+    <!-- SECTION 4: CACHING STRATEGIES -->
+    <div class="card" id="strategies">
+      <h3 class="card-title">⚡ Common Caching Strategies</h3>
+      <p>Inside the <code>fetch</code> event listener, you implement network proxy routing using different caching patterns:</p>
+
+      <!-- Strategy 1 -->
+      <div style="background: rgba(13, 17, 23, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+        <h4 style="color: var(--accent-emerald); margin-bottom: 0.25rem;">1. Cache First (Cache Falling Back to Network)</h4>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">
+          <strong>Best For:</strong> Static immutable assets (images, fonts, CSS, JS bundles). Returns cached response instantly; falls back to network only if cache miss.
+        </p>
+        <div class="code-block">
+          <div class="code-header"><span>sw.js (Cache First)</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then(networkResponse => {
+        if (!networkResponse || networkResponse.status !== 200) {
+          return networkResponse;
+        }
+        const responseToCache = networkResponse.clone();
+        caches.open('runtime-assets').then(cache => {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      });
+    })
+  );
+});</pre>
+        </div>
+      </div>
+
+      <!-- Strategy 2 -->
+      <div style="background: rgba(13, 17, 23, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+        <h4 style="color: var(--accent-cyan); margin-bottom: 0.25rem;">2. Network First (Network Falling Back to Cache)</h4>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">
+          <strong>Best For:</strong> Frequently updated data (live feeds, news articles, API endpoints). Tries fresh network response first; falls back to cached backup when offline.
+        </p>
+        <div class="code-block">
+          <div class="code-header"><span>sw.js (Network First)</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        const responseToCache = networkResponse.clone();
+        caches.open('dynamic-api-v1').then(cache => cache.put(event.request, responseToCache));
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
+  );
+});</pre>
+        </div>
+      </div>
+
+      <!-- Strategy 3 -->
+      <div style="background: rgba(13, 17, 23, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+        <h4 style="color: var(--accent-amber); margin-bottom: 0.25rem;">3. Stale-While-Revalidate</h4>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">
+          <strong>Best For:</strong> Non-critical real-time content (user avatars, dashboard metrics). Serves cached response instantly for speed, while asynchronously fetching network data in background to update cache for the next page load.
+        </p>
+        <div class="code-block">
+          <div class="code-header"><span>sw.js (Stale-While-Revalidate)</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.open('sw-cache-v1').then(cache => {
+      return cache.match(event.request).then(cachedResponse => {
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          if (networkResponse.status === 200) {
+            cache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        });
+        return cachedResponse || fetchPromise;
+      });
+    })
+  );
+});</pre>
+        </div>
+      </div>
+
+      <!-- Strategy 4 & 5 Grid -->
+      <div class="grid-2">
+        <div style="background: rgba(13, 17, 23, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.1rem;">
+          <h4 style="color: var(--accent-purple); font-size: 0.95rem; margin-bottom: 0.35rem;">4. Cache Only</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Only searches cache. Fails if item is absent. Used for pre-built offline static shell apps.</p>
+        </div>
+        <div style="background: rgba(13, 17, 23, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.1rem;">
+          <h4 style="color: var(--accent-pink); font-size: 0.95rem; margin-bottom: 0.35rem;">5. Network Only</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Bypasses cache completely. Standard web behavior for payments, authentication, and live web sockets.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 5: BROWSER STORAGE ECOSYSTEM -->
+    <div class="card" id="storage-ecosystem">
+      <h3 class="card-title">🗄️ Client-Side Browser Storage Ecosystem</h3>
+      <p>
+        Modern web browsers provide multiple client-side storage mechanisms designed for different data types, persistence levels, and performance constraints.
+      </p>
+
+      <!-- Comprehensive Comparison Table -->
+      <h4 style="color: #fff; margin: 1.25rem 0 0.5rem 0; font-family: 'Outfit', sans-serif;">Client-Side Storage Comparison Matrix</h4>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Storage Type</th>
+              <th>Capacity Limit</th>
+              <th>Persistence / Lifespan</th>
+              <th>Service Worker Access</th>
+              <th>API Style</th>
+              <th>Data Formats</th>
+              <th>Primary Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cache Storage</strong></td>
+              <td>Large (~GBs, Quota API)</td>
+              <td>Persistent (until deleted)</td>
+              <td><span class="tag tag-yes">YES</span></td>
+              <td><span class="tag tag-async">Async Promises</span></td>
+              <td>HTTP Request / Response objects</td>
+              <td>Network response caching, static asset precaching for offline PWAs</td>
+            </tr>
+            <tr>
+              <td><strong>IndexedDB</strong></td>
+              <td>Large (~GBs, Quota API)</td>
+              <td>Persistent (until deleted)</td>
+              <td><span class="tag tag-yes">YES</span></td>
+              <td><span class="tag tag-async">Async Promises/Events</span></td>
+              <td>Structured JSON objects, Blobs, ArrayBuffers, Files</td>
+              <td>Complex offline application data, queued offline forms, transactional databases</td>
+            </tr>
+            <tr>
+              <td><strong>sessionStorage</strong></td>
+              <td>~5 MB per origin</td>
+              <td>Tab session duration (cleared on tab close)</td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td><span class="tag tag-sync">Sync Blocking</span></td>
+              <td>Strings only</td>
+              <td>Transient multi-step wizard state, active form inputs for single session</td>
+            </tr>
+            <tr>
+              <td><strong>localStorage</strong></td>
+              <td>~5 MB to 10 MB per origin</td>
+              <td>Persistent across tabs/reboots (until cleared)</td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td><span class="tag tag-sync">Sync Blocking</span></td>
+              <td>Strings only (JSON stringify required)</td>
+              <td>Lightweight UI user preferences, theme selection (dark/light), simple settings</td>
+            </tr>
+            <tr>
+              <td><strong>Cookies</strong></td>
+              <td>~4 KB total per domain (4096 bytes)</td>
+              <td>Configurable (Expires/Max-Age)</td>
+              <td><span class="tag tag-no">NO</span></td>
+              <td><span class="tag tag-sync">Sync (document.cookie)</span></td>
+              <td>Formatted text string pairs</td>
+              <td>Server authentication session identifiers, HTTP-Only security tokens</td>
+            </tr>
+            <tr>
+              <td><strong>OPFS (Origin Private FS)</strong></td>
+              <td>Large (~GBs, Quota API)</td>
+              <td>Persistent</td>
+              <td><span class="tag tag-yes">YES</span></td>
+              <td><span class="tag tag-async">Async & Sync Access Handles</span></td>
+              <td>Binary files, raw byte streams</td>
+              <td>High-performance file processing, SQLite databases, WebAssembly storage</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Why localStorage/sessionStorage are unavailable in SW -->
+      <div class="callout callout-warning">
+        <h4 style="color: var(--accent-pink); font-size: 1.05rem; margin-bottom: 0.4rem; font-family: 'Outfit', sans-serif;">
+          ⚠️ Why are `localStorage` and `sessionStorage` Unavailable in Service Workers?
+        </h4>
+        <p style="font-size: 0.92rem; color: var(--text-main);">
+          Service Workers run in a fully asynchronous, non-blocking event-driven global scope. <code>localStorage</code> and <code>sessionStorage</code> are <strong>synchronous blocking APIs</strong>. If accessed inside a worker thread, synchronous reads/writes would block the event loop, defeating the multi-threaded performance architecture.
+        </p>
+        <p style="font-size: 0.92rem; color: var(--text-main); margin-top: 0.5rem;">
+          <strong>Solution for Worker State:</strong> Use <strong>IndexedDB</strong> for structured state inside Service Workers, or communicate with browser tabs using <code>postMessage</code> or <code>BroadcastChannel</code>.
+        </p>
+      </div>
+
+      <!-- DOM to SW State Sharing -->
+      <h4 style="color: #fff; margin: 1.5rem 0 0.5rem 0; font-family: 'Outfit', sans-serif;">Sharing State Between DOM & Service Worker</h4>
+      
+      <div class="grid-2">
+        <!-- Pattern A: IndexedDB -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-cyan); margin-bottom: 0.35rem;">Pattern A: Shared Storage (IndexedDB)</h4>
+          <p style="font-size: 0.88rem; color: var(--text-muted);">
+            Both DOM scripts and Service Workers share access to the origin's IndexedDB stores.
+          </p>
+          <div class="code-block" style="margin: 0.5rem 0 0 0;">
+            <div class="code-header"><span>Shared IndexedDB</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>// In DOM script:
+const db = await idb.openDB('app-db', 1, { ... });
+await db.put('tokens', tokenVal, 'authToken');
+
+// In sw.js:
+const db = await idb.openDB('app-db', 1);
+const token = await db.get('tokens', 'authToken');</pre>
+          </div>
+        </div>
+
+        <!-- Pattern B: postMessage -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-amber); margin-bottom: 0.35rem;">Pattern B: Bidirectional Messaging (`postMessage`)</h4>
+          <p style="font-size: 0.88rem; color: var(--text-muted);">
+            Send runtime session tokens or state directly via postMessage messaging pipeline.
+          </p>
+          <div class="code-block" style="margin: 0.5rem 0 0 0;">
+            <div class="code-header"><span>postMessage API</span><button class="copy-btn" onclick="copyText(this)">Copy</button></div>
+<pre>// In DOM script:
+navigator.serviceWorker.controller.postMessage({
+  type: 'SET_TOKEN',
+  token: 'xyz123'
+});
+
+// In sw.js:
+self.addEventListener('message', (event) => {
+  if (event.data.type === 'SET_TOKEN') {
+    authToken = event.data.token;
+  }
+});</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 6: CAPABILITIES -->
+    <div class="card" id="capabilities">
+      <h3 class="card-title">🔔 Key Capabilities & Advanced PWA Features</h3>
+      <div class="grid-2">
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-cyan); font-size: 1rem;">📶 Offline UI Shell Pattern</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Allows PWA apps to instantly render header, sidebar, and fallback UI pages even when network status is 100% offline.
+          </p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-purple); font-size: 1rem;">🔔 Push Notifications (`push` event)</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Listens for server push notifications via Web Push API and displays native OS system alerts even when browser tabs are closed.
+          </p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-emerald); font-size: 1rem;">🔄 Background Sync (`sync` event)</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Defers failed offline form submissions or chat messages until stable internet connectivity is automatically re-established.
+          </p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-amber); font-size: 1rem;">💬 Channel Communication (`BroadcastChannel`)</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Enables seamless 1-to-many communication across all open tabs and active Service Workers using broadcast topics.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: PITFALLS & GOTCHAS -->
+    <div class="card" id="gotchas">
+      <h3 class="card-title">⚠️ Common Pitfalls, Gotchas & Security Rules</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+        
+        <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--accent-pink); border-radius: 0 10px 10px 0; padding: 1rem 1.1rem;">
+          <strong style="color: var(--accent-pink); font-size: 0.95rem;">1. The Stale SW Cache Trap (Update Delay)</strong>
+          <p style="font-size: 0.88rem; color: var(--text-main); margin-top: 0.25rem;">
+            When updating <code>sw.js</code>, existing browser tabs run the OLD Service Worker until every single tab of your website is completely closed by the user. Call <code>self.skipWaiting()</code> during install and <code>clients.claim()</code> during activation to bypass this wait state.
+          </p>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--accent-amber); border-radius: 0 10px 10px 0; padding: 1rem 1.1rem;">
+          <strong style="color: var(--accent-amber); font-size: 0.95rem;">2. Registration Scope Boundaries</strong>
+          <p style="font-size: 0.88rem; color: var(--text-main); margin-top: 0.25rem;">
+            A Service Worker script placed at <code>/assets/js/sw.js</code> can only intercept network requests starting with <code>/assets/js/</code>. Place your <code>sw.js</code> at the root directory level (<code>/sw.js</code>) to control the entire origin scope.
+          </p>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--accent-cyan); border-radius: 0 10px 10px 0; padding: 1rem 1.1rem;">
+          <strong style="color: var(--accent-cyan); font-size: 0.95rem;">3. HTTP Header Cache-Control Danger</strong>
+          <p style="font-size: 0.88rem; color: var(--text-main); margin-top: 0.25rem;">
+            Never configure long HTTP <code>Cache-Control</code> response headers (e.g. <code>max-age=31536000</code>) on the <code>sw.js</code> file itself at the web server level. If cached by the server, browsers will fail to check for Service Worker code updates. Always serve <code>sw.js</code> with <code>Cache-Control: no-cache, max-age=0</code>.
+          </p>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--accent-purple); border-radius: 0 10px 10px 0; padding: 1rem 1.1rem;">
+          <strong style="color: var(--accent-purple); font-size: 0.95rem;">4. HTTPS Requirement & Localhost Exception</strong>
+          <p style="font-size: 0.88rem; color: var(--text-main); margin-top: 0.25rem;">
+            Service Workers require HTTPS in production to prevent Man-in-the-Middle network tampering. Browser engines explicitly whitelist <code>localhost</code> and <code>127.0.0.1</code> to allow local development.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function copyText(button) {
+      const codeBlock = button.parentElement.nextElementSibling;
+      const textToCopy = codeBlock.textContent;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = 'rgba(16, 185, 129, 0.3)';
+        button.style.color = '#fff';
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.style.background = 'rgba(255, 255, 255, 0.05)';
+          button.style.color = 'var(--text-muted)';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

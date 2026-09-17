@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Portal - Developer Documentation & Guides Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #080c14;
+      --bg-gradient-end: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-amber: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    /* Navbar */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 12, 20, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 1.5rem;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+    }
+
+    .nav-tag {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--accent-cyan);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 2.5rem auto 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Hero Header */
+    header.hero {
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
+
+    header.hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-purple), var(--accent-pink), transparent);
+    }
+
+    h1.hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 20%, var(--accent-cyan) 60%, var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    p.hero-subtitle {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Learning Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.75rem;
+    }
+
+    .learning-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .learning-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+
+    .card-deploy::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-emerald)); }
+    .card-skill::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+    .card-ratelimit::before { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
+    .card-sw::before { background: linear-gradient(90deg, var(--accent-amber), #ea580c); }
+    .card-whatsapp::before { background: linear-gradient(90deg, #10b981, #14b8a6); }
+    .card-partner::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan)); }
+    .card-study::before { background: linear-gradient(90deg, var(--accent-pink), var(--accent-amber)); }
+
+    .learning-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .icon-deploy { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--accent-blue); }
+    .icon-skill { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3); color: var(--accent-pink); }
+    .icon-ratelimit { background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--accent-cyan); }
+    .icon-sw { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-amber); }
+    .icon-whatsapp { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; }
+    .icon-partner { background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); }
+    .icon-study { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-amber); }
+
+    .card-category {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+
+    .cat-deploy { color: var(--accent-emerald); }
+    .cat-skill { color: var(--accent-pink); }
+    .cat-ratelimit { color: var(--accent-cyan); }
+    .cat-sw { color: var(--accent-amber); }
+    .cat-whatsapp { color: #10b981; }
+    .cat-partner { color: var(--accent-purple); }
+    .cat-study { color: var(--accent-amber); }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .card-description {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+    }
+
+    .topics-list {
+      list-style: none;
+      margin-bottom: 1.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 1rem;
+    }
+
+    .topics-list li {
+      position: relative;
+      padding-left: 1.4rem;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .topics-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent-cyan);
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .card-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-deploy {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.2));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+    .btn-deploy:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(16, 185, 129, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-skill {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      color: #f472b6;
+    }
+    .btn-skill:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(236, 72, 153, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(236, 72, 153, 0.3);
+    }
+
+    .btn-ratelimit {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: var(--accent-cyan);
+    }
+    .btn-ratelimit:hover {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+    }
+
+    .btn-sw {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--accent-amber);
+    }
+    .btn-sw:hover {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(234, 88, 12, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-whatsapp {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(20, 184, 166, 0.2));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #10b981;
+    }
+    .btn-whatsapp:hover {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(20, 184, 166, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-partner {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c4b5fd;
+    }
+    .btn-partner:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(6, 182, 212, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-study {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(245, 158, 11, 0.2));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fcd34d;
+    }
+    .btn-study:hover {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.4), rgba(245, 158, 11, 0.4));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      h1.hero-title { font-size: 2.5rem; }
+      .container { padding: 0 1rem; }
+      .learning-card { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="top-nav">
+    <div class="nav-container">
+      <a href="learning.html" class="brand">
+        <div class="brand-icon">📚</div>
+        Developer Learning Portal
+      </a>
+      <span class="nav-tag">Main Hub</span>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- Main Heading Section -->
+    <header class="hero">
+      <h1 class="hero-title">Learning</h1>
+      <p class="hero-subtitle">
+        Explore interactive technical guides, deployment architecture standards, AI agent skill specifications, and backend rate limiting strategies.
+      </p>
+    </header>
+
+    <!-- Cards Section -->
+    <div class="cards-grid">
+
+      <!-- CARD 1: index.html -->
+      <div class="learning-card card-deploy">
+        <div>
+          <div class="card-header-icon icon-deploy">🚀</div>
+          <div class="card-category cat-deploy">Deployment & Hosting</div>
+          <h2 class="card-title">mPanel Deployment Guide</h2>
+          <p class="card-description">
+            Step-by-step instructions for deploying a Next.js / Node.js backend & static frontend on mPanel server architecture.
+          </p>
+          <ul class="topics-list">
+            <li>Node.js App Mode & Proxy Configuration</li>
+            <li>Static Frontend (<code>public_html/</code>) dist zipping rules</li>
+            <li>Backend (<code>backend/</code>) directory TypeScript compile rules</li>
+            <li>Live Log monitoring & server management</li>
+          </ul>
+        </div>
+        <a href="index.html" class="card-action-btn btn-deploy">
+          Explore Deployment Guide ➔
+        </a>
+      </div>
+
+      <!-- CARD 2: skill_md_guide.html -->
+      <div class="learning-card card-skill">
+        <div>
+          <div class="card-header-icon icon-skill">🤖</div>
+          <div class="card-category cat-skill">AI Agent Engineering</div>
+          <h2 class="card-title">SKILL.md Technical Reference</h2>
+          <p class="card-description">
+            Comprehensive reference guide defining <code>SKILL.md</code> files, AI coding agent instruction manuals, and repo hierarchy.
+          </p>
+          <ul class="topics-list">
+            <li>What is SKILL.md & why it eliminates drift</li>
+            <li>5 Core Sections (Name, Purpose, Process, Rules, Output)</li>
+            <li>Real Node.js API development skill example</li>
+            <li><code>SKILL.md</code> vs <code>AGENTS.md</code> vs ESLint linters</li>
+          </ul>
+        </div>
+        <a href="skill_md_guide.html" class="card-action-btn btn-skill">
+          Explore SKILL.md Guide ➔
+        </a>
+      </div>
+
+      <!-- CARD 3: rate_limiting_guide.html -->
+      <div class="learning-card card-ratelimit">
+        <div>
+          <div class="card-header-icon icon-ratelimit">🛡️</div>
+          <div class="card-category cat-ratelimit">Backend Security</div>
+          <h2 class="card-title">API Rate Limiting Masterclass</h2>
+          <p class="card-description">
+            Architecture notes, test matrices, starting endpoint thresholds, and practical implementation timelines for rate limiting.
+          </p>
+          <ul class="topics-list">
+            <li><strong>Rate Limiting Concept & Benefits</strong> (DDoS, Brute Force, Costs)</li>
+            <li><strong>Identifier Selection (IP / User / API Key)</strong> per Endpoint Tier</li>
+            <li><strong>Public, Authenticated, Sensitive & Expensive</strong> Tier Rules</li>
+            <li><strong>Loopholes & Vulnerabilities</strong> (NAT collisions, proxy rotation, botnets, race conditions)</li>
+            <li><strong>RL-01 to RL-10</strong> Interactive Test Case Matrix & Roadmap</li>
+          </ul>
+        </div>
+        <a href="rate_limiting_guide.html" class="card-action-btn btn-ratelimit">
+          Explore Rate Limiting Guide ➔
+        </a>
+      </div>
+
+      <!-- CARD 4: service_worker_guide.html -->
+      <div class="learning-card card-sw">
+        <div>
+          <div class="card-header-icon icon-sw">⚙️</div>
+          <div class="card-category cat-sw">Frontend Architecture</div>
+          <h2 class="card-title">Service Worker & Storage Guide</h2>
+          <p class="card-description">
+            Event-driven background proxies, 4-phase lifecycle, Cache API methods, caching strategies, and client-side storage mechanisms.
+          </p>
+          <ul class="topics-list">
+            <li><strong>Service Worker Proxy</strong> & Worker Threads Comparison Matrix</li>
+            <li><strong>4 Lifecycle Phases:</strong> Register ➔ Install ➔ Activate ➔ Idle</li>
+            <li><strong>Cache API Deep Dive:</strong> <code>caches.open</code>, <code>addAll</code> & storage quotas</li>
+            <li><strong>Caching Strategies:</strong> Cache First, Network First & Stale-While-Revalidate</li>
+            <li><strong>Web Storage Ecosystem:</strong> <code>Cache Storage</code>, <code>IndexedDB</code>, <code>sessionStorage</code>, <code>localStorage</code>, <code>Cookies</code>, <code>OPFS</code></li>
+            <li><strong>Pitfalls & Gotchas:</strong> Stale SW update trap, sync vs async storage rules</li>
+          </ul>
+        </div>
+        <a href="service_worker_guide.html" class="card-action-btn btn-sw">
+          Explore Service Worker Guide ➔
+        </a>
+      </div>
+
+      <!-- CARD 5: aisensy_guide.html -->
+      <div class="learning-card card-whatsapp">
+        <div>
+          <div class="card-header-icon icon-whatsapp">💬</div>
+          <div class="card-category cat-whatsapp">WhatsApp Platform & Automation</div>
+          <h2 class="card-title">AiSensy & WhatsApp API Guide</h2>
+          <p class="card-description">
+            Complete developer reference for WhatsApp Business Platform, AiSensy provider integration, webhooks, AI agents & backend APIs.
+          </p>
+          <ul class="topics-list">
+            <li><strong>3-Tier Ecosystem Architecture:</strong> Meta Cloud API vs BSP Provider Layer</li>
+            <li><strong>10+ Market Alternatives Deep Dive:</strong> WATI, Interakt, Gallabox, Gupshup, Twilio, Respond.io & Doubletick</li>
+            <li><strong>WhatsApp Templates & 24-Hr Service Window:</strong> Approval flow & messaging limit tiers</li>
+            <li><strong>Broadcasting & Retargeting:</strong> Audience segmentation, CTWA ads & tracking</li>
+            <li><strong>AI Agents & Support Handoff:</strong> Context reasoning & multi-agent team inbox</li>
+            <li><strong>Backend Pipeline & Webhooks:</strong> Event-driven architecture, idempotency, pricing & cheat sheet</li>
+          </ul>
+        </div>
+        <a href="aisensy_guide.html" class="card-action-btn btn-whatsapp">
+          Explore AiSensy Guide ➔
+        </a>
+      </div>
+
+      <!-- CARD 6: ai_partner_guide.html -->
+      <div class="learning-card card-partner">
+        <div>
+          <div class="card-header-icon icon-partner">🤝</div>
+          <div class="card-category cat-partner">Enterprise AI Ecosystems</div>
+          <h2 class="card-title">Claude vs OpenAI Partner Guide</h2>
+          <p class="card-description">
+            Complete executive reference for Anthropic ($100M) and OpenAI ($150M) partner programs, tier requirements, certifications & business models.
+          </p>
+          <ul class="topics-list">
+            <li><strong>Claude Network ($100M) & OpenAI Network ($150M):</strong> Program provisions, tiers & 300k consultant targets</li>
+            <li><strong>4-Layer Mental Model:</strong> AI Provider ➔ Partner Program ➔ Partner Firm ➔ Client Outcome</li>
+            <li><strong>Certification vs Partnership:</strong> Individual Credentials ≠ Company Tier ≠ Production Experience</li>
+            <li><strong>Revenue Flow & 7 Partner Myths:</strong> Client payment structure, customer acquisition & vendor lock-in risks</li>
+            <li><strong>8 Major AI Ecosystem Alternatives:</strong> Deep dive into OpenAI, Gemini, Azure, AWS Bedrock, NVIDIA, Hugging Face, Meta & Mistral</li>
+            <li><strong>Multi-Model Strategy & Skill Roadmap:</strong> Model Router architecture & 4-Level AI engineer roadmap</li>
+          </ul>
+        </div>
+        <a href="ai_partner_guide.html" class="card-action-btn btn-partner">
+          Explore AI Partner Guide ➔
+        </a>
+      </div>
+
+      <!-- CARD 7: learning-questions.html -->
+      <div class="learning-card card-study">
+        <div>
+          <div class="card-header-icon icon-study">🧠</div>
+          <div class="card-category cat-study">Study & Mastery</div>
+          <h2 class="card-title">Learning Topic Cards</h2>
+          <p class="card-description">
+            A comprehensive study guide template consisting of 7 fundamental questions for mastering any new technical topic or framework.
+          </p>
+          <ul class="topics-list">
+            <li><strong>Core Concepts:</strong> What is it & why use it?</li>
+            <li><strong>Trade-offs:</strong> What are the alternatives & costs?</li>
+            <li><strong>Practical:</strong> How to use it & "hello-world" setup</li>
+            <li><strong>Mental Models:</strong> Comparing with existing knowledge</li>
+          </ul>
+        </div>
+        <a href="learning-questions.html" class="card-action-btn btn-study">
+          Explore Study Guide ➔
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Developer Knowledge Base • mPanel Deployment, SKILL.md, API Rate Limiting, AiSensy & Claude/OpenAI Partner Ecosystems</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

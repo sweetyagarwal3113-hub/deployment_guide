@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Rate Limiting Masterclass - Strategy, Endpoint Tiers & Loopholes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #080c14;
+      --bg-gradient-end: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(6, 182, 212, 0.4);
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #0d1117;
+      --badge-blue: rgba(59, 130, 246, 0.15);
+      --badge-cyan: rgba(6, 182, 212, 0.15);
+      --badge-emerald: rgba(16, 185, 129, 0.15);
+      --badge-amber: rgba(245, 158, 11, 0.15);
+      --badge-red: rgba(239, 68, 68, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 12, 20, 0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 1.5rem;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(30, 41, 59, 0.5);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: #fff;
+      background: rgba(6, 182, 212, 0.2);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+
+    .nav-btn.hub-link {
+      background: rgba(59, 130, 246, 0.25);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #fff;
+    }
+
+    .nav-btn.skill-link {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15));
+      border-color: rgba(139, 92, 246, 0.35);
+      color: var(--accent-purple);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Hero Header */
+    header.hero {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+    }
+
+    header.hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-cyan), var(--accent-emerald), transparent);
+    }
+
+    .hero-badge-group {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-blue { background: var(--badge-blue); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--accent-cyan); }
+    .badge-emerald { background: var(--badge-emerald); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-emerald); }
+    .badge-amber { background: var(--badge-amber); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-amber); }
+    .badge-red { background: var(--badge-red); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--accent-red); }
+
+    h1.hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.75rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 70%, var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    p.hero-subtitle {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* Card Box */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      scroll-margin-top: 5rem;
+    }
+
+    .card:hover {
+      border-color: var(--card-border-hover);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Content Typography */
+    p { color: var(--text-main); margin-bottom: 1rem; font-size: 0.98rem; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.4rem; color: var(--text-main); }
+    strong { color: #fff; }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      color: var(--accent-cyan);
+    }
+
+    .tc-tag {
+      font-family: 'Fira Code', monospace;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.12);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      border: 1px solid rgba(6, 182, 212, 0.25);
+    }
+
+    /* Endpoint Tier Box Styles */
+    .tier-box {
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .tier-box.public-tier { border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.04); }
+    .tier-box.auth-tier { border-color: rgba(59, 130, 246, 0.35); background: rgba(59, 130, 246, 0.04); }
+    .tier-box.sensitive-tier { border-color: rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.04); }
+    .tier-box.expensive-tier { border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.04); }
+
+    .tier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tier-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .loophole-box {
+      background: rgba(13, 17, 23, 0.8);
+      border-left: 4px solid var(--accent-red);
+      border-radius: 0 10px 10px 0;
+      padding: 1rem 1.1rem;
+      margin-top: 1rem;
+    }
+
+    .loophole-title {
+      color: var(--accent-red);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .mitigation-box {
+      background: rgba(13, 17, 23, 0.8);
+      border-left: 4px solid var(--accent-emerald);
+      border-radius: 0 10px 10px 0;
+      padding: 1rem 1.1rem;
+      margin-top: 0.75rem;
+    }
+
+    .mitigation-title {
+      color: var(--accent-emerald);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      margin: 1.25rem 0;
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: rgba(30, 41, 59, 0.8); color: #fff; font-weight: 600; padding: 0.9rem 1rem; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
+    td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text-main); }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.02); }
+    tr:hover td { background: rgba(6, 182, 212, 0.05); }
+
+    /* Search & Filter Bar */
+    .search-container {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .search-input {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.65rem 1rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: var(--accent-cyan); }
+
+    /* Diagram Box */
+    .diagram-box {
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem 1rem;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .diagram-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .diagram-node {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--accent-blue);
+      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.2);
+    }
+
+    .diagram-arrow { font-size: 1.4rem; color: var(--accent-cyan); font-weight: 800; }
+    .diagram-subnodes { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+    .subnode {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed var(--accent-cyan);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.08);
+      border-radius: 0 12px 12px 0;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+    }
+
+    @media (max-width: 768px) {
+      h1.hero-title { font-size: 2rem; }
+      .container { padding: 0 1rem; }
+      .diagram-flow { flex-direction: column; }
+      .diagram-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <div class="nav-container">
+      <a href="learning.html" class="brand">
+        <div class="brand-icon">🛡️</div>
+        API Rate Limiting Guide
+      </a>
+      <div class="nav-links">
+        <a href="learning.html" class="nav-btn hub-link">📚 Learning Hub</a>
+        <a href="#what-is-rl" class="nav-btn">💡 Concept</a>
+        <a href="#endpoint-tiers" class="nav-btn">🎯 Endpoint Tiers & Loopholes</a>
+        <a href="#test-matrix" class="nav-btn">🧪 Test Matrix</a>
+        <a href="#architecture" class="nav-btn">🏗️ Architecture</a>
+        <a href="#roadmap" class="nav-btn">⏱️ 4-5h Roadmap</a>
+        <a href="skill_md_guide.html" class="nav-btn skill-link">🤖 SKILL.md Guide ➔</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Hero Header -->
+    <header class="hero">
+      <div class="hero-badge-group">
+        <span class="badge badge-blue">🛡️ Backend Security</span>
+        <span class="badge badge-cyan">⚡ Rate Limit Engine</span>
+        <span class="badge badge-amber">🔍 Loopholes & Risk Analysis</span>
+        <span class="badge badge-emerald">🧪 Test Suite Matrix</span>
+      </div>
+      <h1 class="hero-title">API Rate Limiting Masterclass</h1>
+      <p class="hero-subtitle">
+        In-depth architecture notes explaining Rate Limiting, identifier selection (IP vs User vs API Key) across <strong>Public, Authenticated, Sensitive, and Expensive</strong> endpoints—including real-world vulnerabilities and loophole mitigations.
+      </p>
+    </header>
+
+    <!-- SECTION 1: WHAT IS RATE LIMITING -->
+    <div class="card" id="what-is-rl">
+      <h3 class="card-title">💡 Explanation of API Rate Limiting</h3>
+      <p>
+        <strong>API Rate Limiting</strong> is a backend security and traffic-control mechanism that restricts how many HTTP requests a client (identified by IP address, User ID, or API Key) can send to a server within a given timeframe (e.g., 60 requests per minute).
+      </p>
+      
+      <h4 style="color:#fff; margin: 1.25rem 0 0.5rem 0;">Why do we need Rate Limiting?</h4>
+      <div class="grid-2">
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-cyan); font-size: 1rem;">1. DDoS & Spam Protection</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">Prevents malicious botnets from overwhelming application servers and causing service outages.</p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-amber); font-size: 1rem;">2. Brute-Force & Credential Stuffing Defense</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">Stops automated dictionary attacks trying thousands of password combinations on login routes.</p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-emerald); font-size: 1rem;">3. Infrastructure & Cost Management</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">Protects expensive third-party APIs (LLMs, SMS gateways, payment APIs) from draining cloud budgets.</p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 1.1rem; border-radius: 12px; border: 1px solid var(--card-border);">
+          <strong style="color: var(--accent-purple); font-size: 1rem;">4. Multi-Tenant Fairness</strong>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">Ensures no single user or tenant consumes all server CPU/RAM resources at the expense of others.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: ENDPOINT TIERS & LOOPHOLES -->
+    <div class="card" id="endpoint-tiers">
+      <h3 class="card-title">🎯 Identifier Selection (IP vs User vs API Key) for Each Endpoint Tier</h3>
+      <p>
+        Not all endpoints are equal. Choosing the wrong identifier (or applying a single global rule) creates severe security loopholes. Below is the comprehensive breakdown for each endpoint tier:
+      </p>
+
+      <!-- 1. PUBLIC ENDPOINTS -->
+      <div class="tier-box public-tier">
+        <div class="tier-header">
+          <span class="tier-name">1. Public Endpoints (e.g. <code>GET /products</code>, <code>GET /categories</code>)</span>
+          <span class="badge badge-emerald">Best Identifier: IP Address</span>
+        </div>
+        <p><strong>Why IP Address?</strong> Unauthenticated guests do not have a User ID or login session. Therefore, the client's IP address (or <code>X-Forwarded-For</code> header behind proxies) is the only available identifier.</p>
+        
+        <div class="loophole-box">
+          <div class="loophole-title">⚠️ Loopholes & Vulnerabilities of IP Limiting on Public Endpoints:</div>
+          <ul style="font-size: 0.88rem; color: #fca5a5; margin-bottom: 0;">
+            <li><strong>NAT / Corporate IP Collisions:</strong> Hundreds of legitimate users inside an office, university, or cellular network share a single public IP. Aggressive IP limits block all innocent users when one person hits the limit.</li>
+            <li><strong>Residential Proxy & VPN Rotation:</strong> Attackers rent residential proxy networks (100,000+ IPs) and send 1 request per IP, easily bypassing IP rate limits.</li>
+          </ul>
+        </div>
+
+        <div class="mitigation-box">
+          <div class="mitigation-title">🛡️ Best Approach & Mitigation:</div>
+          <p style="font-size: 0.88rem; color: #a7f3d0; margin-bottom: 0;">
+            Use a generous IP threshold (e.g. <code>100 req/min/IP</code>) at the Edge/CDN level (Cloudflare / AWS WAF). Combine with CAPTCHA challenges or IP Reputation scoring if traffic spikes unnaturally.
+          </p>
+        </div>
+      </div>
+
+      <!-- 2. AUTHENTICATED ENDPOINTS -->
+      <div class="tier-box auth-tier">
+        <div class="tier-header">
+          <span class="tier-name">2. Authenticated Endpoints (e.g. <code>GET /profile</code>, <code>GET /orders</code>, <code>POST /cart</code>)</span>
+          <span class="badge badge-blue">Best Identifier: Dual Layer (User ID + IP)</span>
+        </div>
+        <p><strong>Why Dual Layer (User ID + IP)?</strong> User ID ensures fairness per account across devices. However, trusting User ID alone leaves you open to multi-account botnets created on a single machine.</p>
+
+        <div class="loophole-box">
+          <div class="loophole-title">⚠️ Loopholes & Vulnerabilities:</div>
+          <ul style="font-size: 0.88rem; color: #fca5a5; margin-bottom: 0;">
+            <li><strong>User-Only Limiting Loophole:</strong> An attacker creates 1,000 bot accounts on a single IP. If you only limit per User ID, the single IP can send 1,000x the allowed traffic.</li>
+            <li><strong>IP-Only Limiting Loophole:</strong> An attacker logs into 1 account and rotates 500 proxy IPs to scrape user data. Per-IP limiting fails completely.</li>
+          </ul>
+        </div>
+
+        <div class="mitigation-box">
+          <div class="mitigation-title">🛡️ Best Approach & Mitigation:</div>
+          <p style="font-size: 0.88rem; color: #a7f3d0; margin-bottom: 0;">
+            Enforce <strong>Dual-Layer Protection</strong>: Primary limiter on <code>User ID</code> (e.g., 60 req/min/User) + Secondary safety cap on <code>IP Address</code> (e.g., 150 req/min/IP across all accounts).
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. SENSITIVE ENDPOINTS -->
+      <div class="tier-box sensitive-tier">
+        <div class="tier-header">
+          <span class="tier-name">3. Sensitive Endpoints (e.g. <code>POST /login</code>, <code>POST /register</code>, <code>POST /forgot-password</code>)</span>
+          <span class="badge badge-amber">Best Identifier: IP + Targeted Account (Email/Username)</span>
+        </div>
+        <p><strong>Why Targeted Account + IP?</strong> Brute-force attacks target either a single IP trying many passwords, or a botnet targeting one specific user's email across many IPs.</p>
+
+        <div class="loophole-box">
+          <div class="loophole-title">⚠️ Loopholes & Vulnerabilities:</div>
+          <ul style="font-size: 0.88rem; color: #fca5a5; margin-bottom: 0;">
+            <li><strong>Distributed Credential Stuffing (Botnet Spray):</strong> Attackers use 10,000 IPs sending 1 request per IP against target emails. IP-only limiters do nothing.</li>
+            <li><strong>Account Lockout Denial-of-Service (DoS):</strong> If you globally lock an account email after 5 failed attempts, an attacker can intentionally lock out innocent victim accounts by firing 5 wrong passwords.</li>
+          </ul>
+        </div>
+
+        <div class="mitigation-box">
+          <div class="mitigation-title">🛡️ Best Approach & Mitigation:</div>
+          <p style="font-size: 0.88rem; color: #a7f3d0; margin-bottom: 0;">
+            Implement strict IP limiting (<code>5-10 req/min/IP</code>) combined with joint tracking on <code>(IP + Email Target)</code>. Return uniform error messages, enforce exponential backoff delays (1s, 2s, 4s, 8s), and present reCAPTCHA after 3 failures rather than locking out accounts globally.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4. EXPENSIVE ENDPOINTS -->
+      <div class="tier-box expensive-tier">
+        <div class="tier-header">
+          <span class="tier-name">4. Expensive / Heavy Endpoints (e.g. <code>POST /ai/chat</code>, <code>POST /generate-report</code>, <code>POST /upload</code>)</span>
+          <span class="badge badge-red">Best Identifier: User ID / API Key + Token-Weighted / Concurrency Limits</span>
+        </div>
+        <p><strong>Why Token-Weighted & Concurrency Limiting?</strong> These endpoints consume high server CPU, RAM, database locks, or external paid API credits (e.g. OpenAI tokens). A basic "30 requests/min" count is dangerous because 1 heavy request can cost 100x more server computation than another.</p>
+
+        <div class="loophole-box">
+          <div class="loophole-title">⚠️ Loopholes & Vulnerabilities:</div>
+          <ul style="font-size: 0.88rem; color: #fca5a5; margin-bottom: 0;">
+            <li><strong>Payload Size & Token Cost Exploit:</strong> An attacker sends 1 request with a 100,000-word prompt. The request-counter increments by only +1, but your LLM API bill increases by $2.00! 10 such calls drain your cloud budget.</li>
+            <li><strong>Parallel Request Bursting (Race Conditions):</strong> Firing 30 requests concurrently in 20 milliseconds before the Redis counter updates, executing heavy DB jobs simultaneously and crashing worker pools.</li>
+          </ul>
+        </div>
+
+        <div class="mitigation-box">
+          <div class="mitigation-title">🛡️ Best Approach & Mitigation:</div>
+          <p style="font-size: 0.88rem; color: #a7f3d0; margin-bottom: 0;">
+            Use <strong>Token-Weighted Bucket Limiting</strong> (deducting rate credits based on prompt size/compute time) + <strong>Strict Concurrency Semaphores</strong> (e.g., maximum 2 simultaneous active heavy jobs per User/API Key).
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 3: RL TEST CASES MATRIX -->
+    <div class="card" id="test-matrix">
+      <h3 class="card-title">🧪 API Rate Limiting Test Matrix (RL-01 → RL-10)</h3>
+      <p>Use this reference test matrix to validate rate limiting behavior under different isolation scenarios:</p>
+      
+      <div class="search-container">
+        <input type="text" id="matrixSearch" class="search-input" placeholder="🔍 Search test case (e.g. RL-03, IP, API key, Sensitive)..." onkeyup="filterTable()">
+      </div>
+
+      <div class="table-wrapper">
+        <table id="rlTable">
+          <thead>
+            <tr>
+              <th>TC</th>
+              <th>Test Scenario</th>
+              <th>Keep Same</th>
+              <th>Change</th>
+              <th>What It Tells You</th>
+              <th>Where to Use</th>
+              <th>Best Approach & Recommendation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tc-tag">RL-01</span></td>
+              <td><strong>Same IP + same user</strong></td>
+              <td>IP, User, API Key</td>
+              <td><em>Nothing</em></td>
+              <td>Establish baseline threshold</td>
+              <td><code>/login</code>, <code>/products</code>, <code>/profile</code>, <code>/orders</code>, <code>/search</code></td>
+              <td>User-based limit</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-02</span></td>
+              <td><strong>Same IP + different user</strong></td>
+              <td>IP</td>
+              <td>User</td>
+              <td>IP vs user-based limiting effectiveness</td>
+              <td><code>/login</code>, <code>/search</code>, <code>/products</code>, <code>/dashboard</code></td>
+              <td>User-based limit + IP-based protection</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-03</span></td>
+              <td><strong>Different IP + same user</strong></td>
+              <td>User</td>
+              <td>IP</td>
+              <td>User vs IP-based limiting boundary</td>
+              <td>Login, Account APIs, API clients, Mobile apps, Public APIs</td>
+              <td>User/Account-based limit</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-04</span></td>
+              <td><strong>Same user + different API key</strong></td>
+              <td>User, IP</td>
+              <td>API Key</td>
+              <td>User vs API-key quota isolation</td>
+              <td><code>/api/products</code>, <code>/api/orders</code>, <code>/api/search</code>, <code>/api/ai/chat</code></td>
+              <td>User/Organization quota + API-key limit</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-05</span></td>
+              <td><strong>Same IP + different API key</strong></td>
+              <td>IP</td>
+              <td>API Key</td>
+              <td>IP vs API-key limiting boundaries</td>
+              <td>Public / Developer APIs</td>
+              <td>API key limit + IP limit</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-06</span></td>
+              <td><strong>Unauthenticated</strong></td>
+              <td>IP</td>
+              <td>Authentication</td>
+              <td>Anonymous policy throttling</td>
+              <td><code>/login</code>, <code>/forgot-password</code>, <code>/register</code></td>
+              <td>IP limit + additional account-based protection</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-07</span></td>
+              <td><strong>Authenticated</strong></td>
+              <td>IP</td>
+              <td>User / Account</td>
+              <td>Authenticated session rate policy</td>
+              <td><code>/profile</code>, <code>/orders</code>, <code>/cart</code>, <code>/search</code>, <code>/ai/chat</code></td>
+              <td>User limit + IP limit</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-08</span></td>
+              <td><strong>Same API key + different user</strong></td>
+              <td>API Key</td>
+              <td>User</td>
+              <td>Multi-user organization key limiting</td>
+              <td>Internal Enterprise APIs</td>
+              <td>Organization quota + User quota + API-key quota</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-09</span></td>
+              <td><strong>Same user + different endpoint</strong></td>
+              <td>User</td>
+              <td>Endpoint</td>
+              <td>Per-user vs per-endpoint resource limit</td>
+              <td><code>GET /products</code>, <code>GET /categories</code>, <code>POST /generate-report</code>, <code>POST /upload</code>, <code>POST /ai/chat</code></td>
+              <td>Endpoint-specific API Limit</td>
+            </tr>
+            <tr>
+              <td><span class="tc-tag">RL-10</span></td>
+              <td><strong>Different endpoint + same IP</strong></td>
+              <td>IP</td>
+              <td>Endpoint</td>
+              <td>Per-IP vs global safety net limit</td>
+              <td><code>/api/products</code>, <code>/api/categories</code>, <code>/api/profile</code></td>
+              <td>Endpoint-specific limits + IP safety limit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 4: ARCHITECTURE & PIPELINE -->
+    <div class="card" id="architecture">
+      <h3 class="card-title">🏗️ Rate Limiting Architecture & Pipeline</h3>
+      
+      <div class="callout">
+        <strong style="color: #fff; font-size: 1.05rem;">Core Architecture Rule:</strong>
+        <p style="margin-top: 0.25rem;">
+          Combine <strong>endpoint-specific limits</strong> for sensitive/expensive APIs with a broader <strong>IP-level safety limit</strong> at the Gateway/CDN layer.
+        </p>
+      </div>
+
+      <!-- Diagram Flow -->
+      <div class="diagram-box">
+        <h4 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem;">RATE LIMIT EVALUATION PIPELINE</h4>
+        <div class="diagram-flow">
+          <div class="diagram-node">
+            RATE LIMIT ENGINE
+          </div>
+          <div class="diagram-arrow">➔</div>
+          <div class="diagram-subnodes">
+            <div class="subnode">IP IDENTIFIER</div>
+            <div class="subnode">USER ID</div>
+            <div class="subnode">API KEY</div>
+          </div>
+          <div class="diagram-arrow">➔</div>
+          <div class="diagram-node" style="border-color: var(--accent-emerald);">
+            TARGET ENDPOINT
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint Limits Table -->
+      <h4 style="color:#fff; margin: 1.5rem 0 0.75rem 0;">Suggested Starting Thresholds</h4>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Endpoint Route</th>
+              <th>Suggested Starting Limit</th>
+              <th>Category</th>
+              <th>Primary Identifier</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/login</code></td>
+              <td><strong>5–10 / min / IP</strong></td>
+              <td><span class="badge badge-amber">Sensitive</span></td>
+              <td>IP + Targeted Email</td>
+            </tr>
+            <tr>
+              <td><code>/register</code></td>
+              <td><strong>5–10 / min / IP</strong></td>
+              <td><span class="badge badge-amber">Sensitive</span></td>
+              <td>IP Address</td>
+            </tr>
+            <tr>
+              <td><code>/forgot-password</code></td>
+              <td><strong>5–10 / min / IP</strong></td>
+              <td><span class="badge badge-amber">Sensitive</span></td>
+              <td>IP + Email Target</td>
+            </tr>
+            <tr>
+              <td><code>/search</code></td>
+              <td><strong>30–60 / min / user</strong></td>
+              <td><span class="badge badge-blue">Normal</span></td>
+              <td>User ID</td>
+            </tr>
+            <tr>
+              <td><code>/products</code></td>
+              <td><strong>100 / min / user / IP</strong></td>
+              <td><span class="badge badge-emerald">Public</span></td>
+              <td>IP Address</td>
+            </tr>
+            <tr>
+              <td><code>/orders</code></td>
+              <td><strong>30–60 / min / user</strong></td>
+              <td><span class="badge badge-cyan">Authenticated</span></td>
+              <td>User ID + IP</td>
+            </tr>
+            <tr>
+              <td><code>/ai/chat</code></td>
+              <td><strong>10–30 / min / user</strong></td>
+              <td><span class="badge badge-red">Expensive</span></td>
+              <td>User ID + Token Weight</td>
+            </tr>
+            <tr>
+              <td><code>Normal APIs</code></td>
+              <td><strong>60–100 / min</strong></td>
+              <td><span class="badge badge-blue">Standard</span></td>
+              <td>Global IP / User</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 5: 4-5 HOUR ROADMAP -->
+    <div class="card" id="roadmap">
+      <h3 class="card-title">⏱️ Practical 4–5 Hour Implementation Roadmap</h3>
+      
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.25rem;">
+        
+        <!-- Hour 1 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-cyan); margin-bottom: 0.5rem;">⏱️ Hour 1 — Identify & Categorize Endpoints</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Divide endpoints into 4 categories:</p>
+          <div class="grid-2" style="font-size: 0.88rem; margin-top: 0.5rem;">
+            <div><strong>Public:</strong> <code>GET /products</code>, <code>GET /categories</code></div>
+            <div><strong>Authenticated:</strong> <code>GET /profile</code>, <code>GET /orders</code></div>
+            <div><strong>Sensitive:</strong> <code>POST /login</code>, <code>POST /register</code>, <code>POST /forgot-password</code></div>
+            <div><strong>Expensive:</strong> <code>POST /ai/chat</code>, <code>POST /generate-report</code>, <code>POST /upload</code></div>
+          </div>
+        </div>
+
+        <!-- Hour 2 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-emerald); margin-bottom: 0.5rem;">⏱️ Hour 2 — Global IP Limiter</h4>
+          <p style="font-size: 0.9rem; color: var(--text-main);">
+            Implement <code>IP ➔ 100/min</code> at the middleware/gateway level for general API DDoS protection.
+          </p>
+        </div>
+
+        <!-- Hour 3 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-amber); margin-bottom: 0.5rem;">⏱️ Hour 3 — Endpoint-Specific Limits</h4>
+          <p style="font-size: 0.9rem; color: var(--text-main);">
+            Add stricter limits for sensitive endpoints: <code>5-10/min</code> on authentication routes (<code>/login</code>, <code>/register</code>) and <code>10-30/min</code> on computational endpoints (<code>/ai/chat</code>, <code>/generate-report</code>).
+          </p>
+        </div>
+
+        <!-- Hour 4 -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: var(--accent-purple); margin-bottom: 0.5rem;">⏱️ Hour 4 — Authentication & API-Key Aware Limits</h4>
+          <p style="font-size: 0.9rem; color: var(--text-main);">
+            <strong>For authenticated APIs:</strong> Enforce <code>User Limit + IP Limit</code> (stops single account spam and IP proxy rotation).<br>
+            <strong>For API-key-based applications:</strong> Enforce <code>API Key Limit + IP Limit</code>.
+          </p>
+        </div>
+
+        <!-- Final Hour -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1.25rem;">
+          <h4 style="color: #fff; margin-bottom: 0.5rem;">⏱️ Final Hour — Automated & Manual Verification Testing</h4>
+          <p style="font-size: 0.9rem; color: var(--text-main);">
+            Run verification suite testing all 10 matrix conditions (RL-01 through RL-10) to validate 429 Too Many Requests response headers, Retry-After fields, IP isolation, and multi-tenant quotas.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function filterTable() {
+      const input = document.getElementById("matrixSearch");
+      const filter = input.value.toUpperCase();
+      const table = document.getElementById("rlTable");
+      const tr = table.getElementsByTagName("tr");
+
+      for (let i = 1; i < tr.length; i++) {
+        let visible = false;
+        const tds = tr[i].getElementsByTagName("td");
+        for (let j = 0; j < tds.length; j++) {
+          if (tds[j]) {
+            const txtValue = tds[j].textContent || tds[j].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              visible = true;
+              break;
+            }
+          }
+        }
+        tr[i].style.display = visible ? "" : "none";
+      }
+    }
+  </script>
+</body>
+</html>

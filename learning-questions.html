@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Topic Cards</title>
+    <!-- Clean, readable font for studying -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f4f6;
+            --text-main: #111827;
+            --text-muted: #4b5563;
+            --card-bg: #ffffff;
+            --accent: #4f46e5;
+            /* Indigo */
+            --accent-light: #e0e7ff;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 3rem 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        /* Grid layout for the cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Individual Card Styling */
+        .topic-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #c7d2fe;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            background: var(--accent-light);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 0 0 0.75rem 0;
+            color: var(--text-main);
+        }
+
+        .card-content {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin: 0;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>New Topic Learning Guide</h1>
+            <p>Mastery Study Guide</p>
+        </div>
+
+        <div class="cards-grid">
+
+            <!-- Card 1 -->
+            <div class="topic-card">
+                <div class="card-icon">💡</div>
+                <h2 class="card-title">1. What is it?</h2>
+                <p class="card-content">Briefly explain the topic in simple terms. Write your summary here.</p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="topic-card">
+                <div class="card-icon">🎯</div>
+                <h2 class="card-title">2. Why use it?</h2>
+                <p class="card-content">What specific problem does it solve? What are its main benefits and use cases?
+                </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="topic-card">
+                <div class="card-icon">⚠️</div>
+                <h2 class="card-title">3. What if we don't use it?</h2>
+                <p class="card-content">What happens without this? What traditional approaches or workarounds would we
+                    have to rely on?</p>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="topic-card">
+                <div class="card-icon">🔄</div>
+                <h2 class="card-title">4. What are the alternatives?</h2>
+                <p class="card-content">What other tools, frameworks, or concepts solve this exact same problem?</p>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="topic-card">
+                <div class="card-icon">💰</div>
+                <h2 class="card-title">5. What is the cost?</h2>
+                <p class="card-content">Consider performance overhead, steep learning curve, financial cost, setup time,
+                    or maintenance burden.</p>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="topic-card">
+                <div class="card-icon">🛠️</div>
+                <h2 class="card-title">6. How to use it?</h2>
+                <p class="card-content">Include basic syntax, a "hello-world" example, or a quick step-by-step guide to
+                    getting started.</p>
+            </div>
+
+            <!-- Card 7 -->
+            <div class="topic-card">
+                <div class="card-icon">🧠</div>
+                <h2 class="card-title">7. Compare it with existing knowledge</h2>
+                <p class="card-content">Mental models and analogies. Relate this to your existing knowledge (e.g., "It's
+                    exactly like X, but it does Y better").</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
