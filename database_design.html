@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Design — Detailed Explanation</title>
+    <!-- Marked.js for parsing Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --heading-color: #1a1a1a;
+            --accent-color: #3498db;
+            --border-color: #e1e4e8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        h1, h2, h3, h4 {
+            color: var(--heading-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { font-size: 2.2em; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+        h2 { font-size: 1.8em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        blockquote {
+            border-left: 4px solid var(--accent-color);
+            background-color: #eaf2f8;
+            margin: 1.5em 0;
+            padding: 15px 20px;
+            border-radius: 0 4px 4px 0;
+            font-style: italic;
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5em;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        th { background-color: #f8f9fa; }
+        code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, 'Courier New', monospace;
+            color: #e06c75;
+        }
+        pre {
+            background-color: #282c34;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1.5em;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #abb2bf;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="content"></div>
+
+    <!-- The Markdown Content -->
+    <script type="text/template" id="markdown-content">
+# Database Design — Detailed Explanation
+
+Database design is one of the most important parts of backend development. A good database design makes an application **organized, fast, secure, scalable, and easier to maintain**.
+
+Think of it like this:
+
+> **Before building a house, we create a blueprint. Similarly, before building an application, we design the database.**
+
+---
+
+# 1. What is Database Design?
+
+**Database design** is the process of deciding:
+
+* What data the application needs
+* Where that data will be stored
+* How data will be divided into tables
+* Which columns each table will have
+* Which column uniquely identifies a record
+* How tables will be connected
+* How duplicate data will be avoided
+* What rules should be applied to the data
+* How the database can remain efficient as data grows
+
+### Simple example
+
+Suppose we are creating an **E-commerce application**.
+
+We need to store:
+
+```text
+Customers
+Products
+Orders
+Payments
+Categories
+Addresses
+```
+
+A poor design might put everything into one table.
+
+A better design separates the information:
+
+```text
+customers
+products
+categories
+orders
+order_items
+payments
+addresses
+```
+
+and connects these tables using keys.
+
+---
+
+# 2. Why Do We Need Database Design?
+
+Imagine storing everything in one table:
+
+| order_id | customer_name | customer_email | product1 | product2 | address | payment |
+| -------- | ------------- | -------------- | -------- | -------- | ------- | ------- |
+
+This creates many problems.
+
+### Problem 1 — Duplicate data
+
+If the same customer places 20 orders, their name/email/address may be stored 20 times.
+
+### Problem 2 — Difficult updates
+
+If the customer's email changes, we may need to update many rows.
+
+### Problem 3 — Data inconsistency
+
+Some rows might contain the old email while others contain the new email.
+
+### Problem 4 — Difficult querying
+
+Finding relationships between customers, products and orders becomes complicated.
+
+### Problem 5 — Scalability
+
+As the application grows, a single huge table becomes difficult to manage.
+
+Database design solves these problems.
+
+---
+
+# 3. Database Design Process
+
+A typical database design process looks like this:
+
+```text
+Requirements
+     ↓
+Identify Entities
+     ↓
+Identify Attributes
+     ↓
+Identify Relationships
+     ↓
+Create ER Model
+     ↓
+Choose Primary Keys
+     ↓
+Choose Foreign Keys
+     ↓
+Normalization
+     ↓
+Define Constraints
+     ↓
+Physical Database Design
+     ↓
+Indexes
+     ↓
+SQL Implementation
+     ↓
+Testing & Optimization
+```
+
+Let's understand every step.
+
+---
+
+# 4. Requirement Analysis
+
+First understand what the application actually needs.
+
+Suppose we are designing a **College Management System**.
+
+We ask:
+
+* What information about students is required?
+* What information about teachers is required?
+* How are students assigned to courses?
+* Which subjects belong to which courses?
+* How are marks stored?
+* How is attendance stored?
+
+Example requirements:
+
+```text
+Student can enroll in a course.
+
+A course has multiple subjects.
+
+A subject can be taught by a teacher.
+
+A student can have marks for multiple subjects.
+
+A student can have attendance records.
+```
+
+These requirements become the foundation of our database.
+
+---
+
+# 5. Identify Entities
+
+An **entity** is a real-world object about which we want to store information.
+
+For a college system:
+
+```text
+Student
+Teacher
+Course
+Subject
+Enrollment
+Marks
+Attendance
+```
+
+These will usually become database tables.
+
+For example:
+
+```text
+students
+teachers
+courses
+subjects
+enrollments
+marks
+attendance
+```
+
+---
+
+# 6. Identify Attributes
+
+An attribute describes an entity.
+
+For example:
+
+### Student
+
+```text
+Student
+ ├── student_id
+ ├── name
+ ├── email
+ ├── phone
+ ├── date_of_birth
+ └── address
+```
+
+### Course
+
+```text
+Course
+ ├── course_id
+ ├── course_name
+ ├── duration
+ └── fees
+```
+
+### Teacher
+
+```text
+Teacher
+ ├── teacher_id
+ ├── name
+ ├── email
+ └── phone
+```
+
+---
+
+# 7. Choose Data Types
+
+Every column needs an appropriate data type.
+
+Example:
+
+```sql
+CREATE TABLE students (
+    student_id INT,
+    name VARCHAR(100),
+    email VARCHAR(150),
+    date_of_birth DATE,
+    fees DECIMAL(10,2),
+    is_active BOOLEAN
+);
+```
+
+Common SQL data types:
+
+| Data Type  | Use                        |
+| ---------- | -------------------------- |
+| `INT`      | Whole numbers              |
+| `BIGINT`   | Very large integers        |
+| `VARCHAR`  | Variable-length text       |
+| `TEXT`     | Large text                 |
+| `DATE`     | Date                       |
+| `DATETIME` | Date + time                |
+| `BOOLEAN`  | True/False                 |
+| `DECIMAL`  | Accurate financial values  |
+| `FLOAT`    | Approximate decimal values |
+
+### Example
+
+Don't store:
+
+```text
+age = "twenty"
+```
+
+Use:
+
+```text
+age INT
+```
+
+Don't store:
+
+```text
+price = "₹500"
+```
+
+Instead:
+
+```text
+price DECIMAL(10,2)
+```
+
+The currency symbol should generally be handled by the application/UI rather than stored inside the numeric value.
+
+---
+
+# 8. Primary Key
+
+A **Primary Key (PK)** uniquely identifies every record.
+
+Example:
+
+```text
+students
+
+student_id | name
+-----------|-------
+1          | Rahul
+2          | Priya
+3          | Amit
+```
+
+Here:
+
+```text
+student_id
+```
+
+is the primary key.
+
+SQL:
+
+```sql
+CREATE TABLE students (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(100)
+);
+```
+
+### Properties of a Primary Key
+
+A primary key should:
+
+* Be unique
+* Not be `NULL`
+* Identify one specific record
+
+---
+
+# 9. Natural Key vs Surrogate Key
+
+There are two common approaches.
+
+### Natural Key
+
+A value that already has real-world meaning.
+
+Example:
+
+```text
+email
+passport_number
+ISBN
+```
+
+### Surrogate Key
+
+An artificial identifier created specifically for the database.
+
+Example:
+
+```text
+student_id = 101
+product_id = 501
+order_id = 1001
+```
+
+In many application databases, surrogate IDs are convenient because real-world values can change.
+
+For example:
+
+```text
+student_id = 101
+email = sweety@example.com
+```
+
+If the email changes, the student's identity in the database doesn't change.
+
+---
+
+# 10. Foreign Key
+
+A **Foreign Key (FK)** connects one table to another.
+
+Example:
+
+### courses
+
+| course_id | course_name |
+| --------: | ----------- |
+|         1 | BCA         |
+|         2 | MCA         |
+
+### students
+
+| student_id | name  | course_id |
+| ---------: | ----- | --------: |
+|        101 | Rahul |         1 |
+|        102 | Priya |         1 |
+|        103 | Amit  |         2 |
+
+Here:
+
+```text
+students.course_id
+```
+
+references:
+
+```text
+courses.course_id
+```
+
+SQL:
+
+```sql
+CREATE TABLE students (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    course_id INT,
+
+    FOREIGN KEY (course_id)
+        REFERENCES courses(course_id)
+);
+```
+
+---
+
+# 11. Relationships
+
+Relationships describe how entities are connected.
+
+There are three major types.
+
+---
+
+## 11.1 One-to-One — 1:1
+
+One record in Table A is related to one record in Table B.
+
+Example:
+
+```text
+Person ───── Passport
+```
+
+One person has one passport.
+
+Possible design:
+
+```text
+persons
+--------
+person_id
+name
+
+passports
+---------
+passport_id
+person_id
+passport_number
+```
+
+---
+
+# 11.2 One-to-Many — 1:N
+
+One record in Table A can have many records in Table B.
+
+Example:
+
+```text
+Course
+   |
+   |---- Student
+   |---- Student
+   |---- Student
+```
+
+One course can have many students.
+
+Database:
+
+```text
+courses
+   |
+   | 1
+   |
+   | N
+students
+```
+
+The foreign key normally goes on the **many side**.
+
+```text
+students.course_id
+```
+
+---
+
+# 11.3 Many-to-Many — M:N
+
+Many records in A can relate to many records in B.
+
+Example:
+
+```text
+Students ↔ Subjects
+```
+
+One student can study multiple subjects.
+
+One subject can have multiple students.
+
+You generally shouldn't directly put multiple IDs in one column.
+
+❌ Bad:
+
+```text
+student_id | subjects
+------------|---------
+101         | 1,2,3
+```
+
+Instead, create a junction table.
+
+### students
+
+```text
+student_id
+name
+```
+
+### subjects
+
+```text
+subject_id
+subject_name
+```
+
+### student_subjects
+
+```text
+student_id
+subject_id
+```
+
+Example:
+
+| student_id | subject_id |
+| ---------: | ---------: |
+|        101 |          1 |
+|        101 |          2 |
+|        101 |          3 |
+|        102 |          1 |
+|        102 |          3 |
+
+This is the standard relational approach to an M:N relationship.
+
+---
+
+# 12. ER Diagram
+
+**ER = Entity Relationship**
+
+An ER diagram visually represents:
+
+* Entities
+* Attributes
+* Relationships
+
+Example:
+
+```text
+┌──────────────────┐
+│     COURSES      │
+├──────────────────┤
+│ PK course_id     │
+│ course_name      │
+└────────┬─────────┘
+         │
+         │ 1
+         │
+         │ N
+┌────────▼─────────┐
+│     STUDENTS     │
+├──────────────────┤
+│ PK student_id    │
+│ name             │
+│ email            │
+│ FK course_id     │
+└──────────────────┘
+```
+
+Meaning:
+
+```text
+One Course
+    ↓
+Many Students
+```
+
+---
+
+# 13. Normalization
+
+Normalization is one of the most important concepts in database design.
+
+### Purpose
+
+Normalization helps:
+
+* Reduce duplicate data
+* Avoid inconsistent data
+* Improve data organization
+* Make updates safer
+
+The major normal forms are:
+
+```text
+1NF
+ ↓
+2NF
+ ↓
+3NF
+ ↓
+BCNF
+```
+
+For many practical applications, understanding **1NF, 2NF and 3NF** is particularly important.
+
+---
+
+# 14. First Normal Form — 1NF
+
+A table is in 1NF when each column contains **atomic/single values**, rather than a list of values in one cell.
+
+❌ Bad:
+
+| student_id | name  | subjects          |
+| ---------: | ----- | ----------------- |
+|          1 | Rahul | Java, Python, SQL |
+
+The `subjects` column contains multiple values.
+
+Better:
+
+| student_id | subject |
+| ---------: | ------- |
+|          1 | Java    |
+|          1 | Python  |
+|          1 | SQL     |
+
+Or, more appropriately for a relational design, use a separate `student_subjects` table.
+
+---
+
+# 15. Second Normal Form — 2NF
+
+2NF requires:
+
+1. The table must already be in 1NF.
+2. Non-key attributes should depend on the **whole primary key**, particularly when the primary key is composite.
+
+Example:
+
+```text
+student_id
+subject_id
+student_name
+subject_name
+marks
+```
+
+Suppose the primary key is:
+
+```text
+(student_id, subject_id)
+```
+
+Then:
+
+```text
+marks
+```
+
+depends on both student and subject.
+
+But:
+
+```text
+student_name
+```
+
+depends only on `student_id`.
+
+And:
+
+```text
+subject_name
+```
+
+depends only on `subject_id`.
+
+So we separate them:
+
+```text
+students
+--------
+student_id
+student_name
+
+subjects
+--------
+subject_id
+subject_name
+
+marks
+-----
+student_id
+subject_id
+marks
+```
+
+---
+
+# 16. Third Normal Form — 3NF
+
+3NF eliminates **transitive dependencies**.
+
+Example:
+
+```text
+student_id
+student_name
+course_id
+course_name
+```
+
+Here:
+
+```text
+student_id → course_id
+course_id → course_name
+```
+
+So:
+
+```text
+student_id → course_name
+```
+
+indirectly.
+
+Instead:
+
+### students
+
+```text
+student_id
+student_name
+course_id
+```
+
+### courses
+
+```text
+course_id
+course_name
+```
+
+Now course information is stored only once.
+
+---
+
+# 17. Denormalization
+
+Normalization isn't always about splitting everything as much as possible.
+
+Sometimes we intentionally duplicate or precompute some data to improve read performance.
+
+This is called **denormalization**.
+
+Example:
+
+Suppose an e-commerce system frequently displays:
+
+```text
+Order
+Customer Name
+Total Amount
+```
+
+We might store some derived information depending on the application's requirements.
+
+However, denormalization introduces additional consistency considerations.
+
+So:
+
+```text
+Normalization → organization & consistency
+Denormalization → sometimes faster reads
+```
+
+---
+
+# 18. Constraints
+
+Constraints are rules applied to data.
+
+### PRIMARY KEY
+
+```sql
+student_id INT PRIMARY KEY
+```
+
+### NOT NULL
+
+```sql
+name VARCHAR(100) NOT NULL
+```
+
+The value must exist.
+
+### UNIQUE
+
+```sql
+email VARCHAR(150) UNIQUE
+```
+
+Duplicate emails are prevented.
+
+### DEFAULT
+
+```sql
+status VARCHAR(20) DEFAULT 'active'
+```
+
+If no status is supplied, `active` can be used.
+
+### CHECK
+
+```sql
+age INT CHECK (age >= 18)
+```
+
+### FOREIGN KEY
+
+```sql
+FOREIGN KEY (course_id)
+REFERENCES courses(course_id)
+```
+
+---
+
+# 19. Referential Integrity
+
+Foreign keys help maintain **referential integrity**.
+
+Suppose:
+
+```text
+courses
+course_id = 10
+```
+
+and:
+
+```text
+students
+course_id = 10
+```
+
+If course `10` doesn't exist, the student record would reference something invalid.
+
+A foreign key prevents such invalid references according to the configured constraint behavior.
+
+---
+
+# 20. ON DELETE and ON UPDATE
+
+Foreign keys can define what happens when a referenced record changes or is deleted.
+
+Example:
+
+```sql
+FOREIGN KEY (course_id)
+REFERENCES courses(course_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE
+```
+
+### CASCADE
+
+Changes/deletions propagate to related records.
+
+### SET NULL
+
+The foreign key becomes `NULL`, if allowed.
+
+### RESTRICT / NO ACTION
+
+The parent operation can be prevented when dependent records exist.
+
+Be careful with `CASCADE`, especially for important production data, because deleting one parent record can remove many dependent records.
+
+---
+
+# 21. Indexing
+
+An **index** helps the database find rows more efficiently.
+
+Imagine a table with:
+
+```text
+10 million users
+```
+
+and you frequently search:
+
+```sql
+SELECT *
+FROM users
+WHERE email = 'abc@gmail.com';
+```
+
+An index on `email` can make this lookup much faster.
+
+```sql
+CREATE INDEX idx_users_email
+ON users(email);
+```
+
+---
+
+# 22. But Too Many Indexes Are Bad
+
+Indexes improve certain reads, but they also have costs.
+
+When inserting/updating/deleting data, indexes may also need to be maintained.
+
+Therefore:
+
+```text
+More indexes ≠ always better
+```
+
+Create indexes based on actual query patterns.
+
+Common index candidates include columns frequently used in:
+
+```text
+WHERE
+JOIN
+ORDER BY
+```
+
+but the exact choice should be validated using query plans and real workloads.
+
+---
+
+# 23. Composite Index
+
+An index can contain multiple columns.
+
+```sql
+CREATE INDEX idx_orders_customer_status
+ON orders(customer_id, status);
+```
+
+This can help queries that filter by the indexed columns in suitable combinations.
+
+The order of columns matters.
+
+For example:
+
+```text
+(customer_id, status)
+```
+
+is not equivalent to:
+
+```text
+(status, customer_id)
+```
+
+for query optimization purposes.
+
+---
+
+# 24. Unique Index
+
+A unique index ensures that values are not duplicated.
+
+Example:
+
+```sql
+CREATE UNIQUE INDEX idx_users_email
+ON users(email);
+```
+
+Now two users cannot have the same email.
+
+Many databases also create an appropriate index automatically for a `UNIQUE` constraint.
+
+---
+
+# 25. Database Schema
+
+A **schema** describes the structure of the database.
+
+For example:
+
+```text
+Database: ecommerce
+
+users
+products
+categories
+orders
+order_items
+payments
+addresses
+```
+
+Each table contains:
+
+```text
+Columns
+Data types
+Keys
+Constraints
+Indexes
+Relationships
+```
+
+---
+
+# 26. Example — E-commerce Database Design
+
+Let's design a practical e-commerce database.
+
+### Main entities
+
+```text
+User
+Category
+Product
+Address
+Order
+Order Item
+Payment
+```
+
+---
+
+## Users
+
+```text
+users
+----------------
+id PK
+name
+email
+password_hash
+phone
+created_at
+updated_at
+```
+
+---
+
+## Categories
+
+```text
+categories
+----------------
+id PK
+name
+description
+```
+
+---
+
+## Products
+
+```text
+products
+----------------
+id PK
+category_id FK
+name
+description
+price
+stock
+created_at
+updated_at
+```
+
+Relationship:
+
+```text
+Category 1 ───── N Product
+```
+
+---
+
+## Addresses
+
+```text
+addresses
+----------------
+id PK
+user_id FK
+address_line
+city
+state
+postal_code
+country
+```
+
+Relationship:
+
+```text
+User 1 ───── N Address
+```
+
+---
+
+## Orders
+
+```text
+orders
+----------------
+id PK
+user_id FK
+address_id FK
+status
+total_amount
+created_at
+```
+
+Relationship:
+
+```text
+User 1 ───── N Orders
+```
+
+---
+
+## Order Items
+
+An order can contain multiple products.
+
+```text
+order_items
+----------------
+id PK
+order_id FK
+product_id FK
+quantity
+unit_price
+```
+
+Relationships:
+
+```text
+Order 1 ───── N OrderItems
+
+Product 1 ─── N OrderItems
+```
+
+This effectively handles:
+
+```text
+Order M ───── N Product
+```
+
+through `order_items`.
+
+---
+
+## Payments
+
+```text
+payments
+----------------
+id PK
+order_id FK
+amount
+payment_method
+status
+transaction_id
+created_at
+```
+
+Depending on the business rules, an order might have one or multiple payment records.
+
+---
+
+# 27. E-commerce Relationship Diagram
+
+```text
+                    ┌──────────────┐
+                    │   CATEGORY   │
+                    └──────┬───────┘
+                           │
+                           │ 1:N
+                           ▼
+                    ┌──────────────┐
+                    │   PRODUCT    │
+                    └──────┬───────┘
+                           │
+                           │ 1:N
+                           ▼
+                    ┌──────────────┐
+                    │ ORDER_ITEMS  │
+                    └──────┬───────┘
+                           │
+                           │ N:1
+                           ▼
+┌──────────────┐     ┌──────────────┐
+│    USERS     │────<│    ORDERS    │
+└──────┬───────┘ 1:N └──────┬───────┘
+       │                     │
+       │ 1:N                 │ 1:N
+       ▼                     ▼
+┌──────────────┐      ┌──────────────┐
+│  ADDRESSES   │      │   PAYMENTS   │
+└──────────────┘      └──────────────┘
+```
+
+---
+
+# 28. SQL Implementation
+
+Example:
+
+```sql
+CREATE TABLE categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+```
+
+Product:
+
+```sql
+CREATE TABLE products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    category_id INT NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0,
+
+    FOREIGN KEY (category_id)
+        REFERENCES categories(id)
+);
+```
+
+Users:
+
+```sql
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Orders:
+
+```sql
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    status VARCHAR(30) DEFAULT 'pending',
+    total_amount DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+);
+```
+
+Order items:
+
+```sql
+CREATE TABLE order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+
+    FOREIGN KEY (order_id)
+        REFERENCES orders(id),
+
+    FOREIGN KEY (product_id)
+        REFERENCES products(id)
+);
+```
+
+---
+
+# 29. Why `order_items` Is Necessary
+
+Suppose customer places:
+
+```text
+Order #1001
+
+Laptop       ₹50,000 × 1
+Mouse        ₹1,000  × 2
+Keyboard     ₹2,000  × 1
+```
+
+Instead of putting:
+
+```text
+product1
+product2
+product3
+```
+
+inside `orders`, we create:
+
+| order_id | product_id | quantity | unit_price |
+| -------: | ---------: | -------: | ---------: |
+|     1001 |         10 |        1 |      50000 |
+|     1001 |         20 |        2 |       1000 |
+|     1001 |         30 |        1 |       2000 |
+
+This is much more flexible.
+
+---
+
+# 30. Why Store `unit_price` in Order Items?
+
+This is an important real-world database-design decision.
+
+Suppose:
+
+```text
+Today:
+Laptop = ₹50,000
+```
+
+Customer purchases it.
+
+Later:
+
+```text
+Laptop = ₹60,000
+```
+
+If `order_items` only references the product's current price, historical orders could incorrectly show ₹60,000.
+
+So we often store:
+
+```text
+unit_price = 50000
+```
+
+in the order item.
+
+This preserves the price used for that particular transaction.
+
+---
+
+# 31. Audit Columns
+
+Many production tables use:
+
+```text
+created_at
+updated_at
+```
+
+Example:
+
+```sql
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+```
+
+Depending on the database and application framework, `updated_at` may be automatically maintained.
+
+These fields help answer:
+
+```text
+When was this record created?
+When was it last modified?
+```
+
+---
+
+# 32. Soft Delete
+
+Instead of physically deleting data:
+
+```sql
+DELETE FROM users WHERE id = 10;
+```
+
+some applications use:
+
+```text
+deleted_at
+```
+
+Example:
+
+```text
+users
+----------------
+id
+name
+email
+deleted_at
+```
+
+If:
+
+```text
+deleted_at = NULL
+```
+
+the record is active.
+
+If:
+
+```text
+deleted_at = 2026-09-26 10:30:00
+```
+
+the record is considered deleted/inactive.
+
+This is called **soft delete**.
+
+It can be useful when records need to be recoverable or retained for business/audit purposes.
+
+---
+
+# 33. Database Design and Backend
+
+As a backend developer, you usually work with this flow:
+
+```text
+Frontend
+   ↓
+HTTP Request
+   ↓
+Controller / Route
+   ↓
+Service / Business Logic
+   ↓
+ORM / SQL
+   ↓
+Database
+```
+
+Example:
+
+```text
+POST /users
+```
+
+Request:
+
+```json
+{
+  "name": "Rahul",
+  "email": "rahul@gmail.com"
+}
+```
+
+Backend:
+
+```text
+Validate request
+      ↓
+Check email
+      ↓
+Hash password
+      ↓
+INSERT into users
+      ↓
+Return response
+```
+
+Database design directly affects how this backend code is written.
+
+---
+
+# 34. Database Design vs Database Management
+
+These are different.
+
+### Database Design
+
+Concerned with:
+
+```text
+What tables?
+What columns?
+What relationships?
+What keys?
+What constraints?
+What indexes?
+```
+
+### Database Management
+
+Concerned with:
+
+```text
+Backup
+Restore
+Security
+Users
+Permissions
+Monitoring
+Performance
+Replication
+Maintenance
+```
+
+---
+
+# 35. Logical vs Physical Database Design
+
+### Logical Design
+
+Focuses on the structure:
+
+```text
+Students
+Courses
+Subjects
+
+Student → Course
+Student ↔ Subject
+```
+
+It is mostly independent of a specific database engine.
+
+### Physical Design
+
+Focuses on implementation details:
+
+```text
+MySQL
+PostgreSQL
+SQL Server
+Oracle
+```
+
+It includes:
+
+* Exact data types
+* Indexes
+* Storage considerations
+* Partitioning
+* Database-specific constraints
+* Query optimization
+
+---
+
+# 36. Good Database Design Principles
+
+Remember these important principles:
+
+### 1. Avoid unnecessary duplication
+
+Don't store the same information repeatedly without a reason.
+
+### 2. Use proper keys
+
+Every important entity should have a reliable identifier.
+
+### 3. Use foreign keys
+
+Use relationships to maintain data integrity where appropriate.
+
+### 4. Choose suitable data types
+
+Don't store numbers as text unnecessarily.
+
+### 5. Normalize appropriately
+
+Avoid unnecessary duplication and update anomalies.
+
+### 6. Don't over-normalize blindly
+
+Highly normalized designs can sometimes require many joins. Use practical judgment based on workload.
+
+### 7. Index based on queries
+
+Don't create indexes randomly.
+
+### 8. Store historical information carefully
+
+For example:
+
+```text
+order_items.unit_price
+```
+
+can preserve transaction history.
+
+### 9. Use constraints
+
+Let the database enforce important data rules where appropriate.
+
+### 10. Design for future growth
+
+Think about:
+
+```text
+10 users
+      ↓
+10,000 users
+      ↓
+10 million users
+```
+
+---
+
+# 37. Common Database Design Mistakes
+
+### ❌ Mistake 1: One huge table
+
+```text
+users_orders_products_payments
+```
+
+Everything in one table creates duplication and complexity.
+
+---
+
+### ❌ Mistake 2: Comma-separated IDs
+
+```text
+product_ids = "1,5,8,10"
+```
+
+This makes querying and enforcing relationships difficult.
+
+Prefer a separate relationship table.
+
+---
+
+### ❌ Mistake 3: No Primary Key
+
+Every important table should have a reliable way to identify individual records.
+
+---
+
+### ❌ Mistake 4: Storing calculated values unnecessarily
+
+For example, storing values that can always be derived may introduce inconsistency.
+
+But some calculated values are intentionally stored for performance or historical reasons, so this is a design decision rather than an absolute rule.
+
+---
+
+### ❌ Mistake 5: No indexes for important queries
+
+A frequently searched large table may become slow.
+
+---
+
+### ❌ Mistake 6: Too many indexes
+
+Indexes also have storage and write-maintenance costs.
+
+---
+
+### ❌ Mistake 7: Wrong data types
+
+For example:
+
+```text
+price VARCHAR(50)
+```
+
+is usually inappropriate if price is used for mathematical operations.
+
+Prefer:
+
+```text
+DECIMAL(10,2)
+```
+
+for financial amounts.
+
+---
+
+# 38. Database Design in a Real Backend Project
+
+Suppose you build a **Real Estate Management System**.
+
+You might have:
+
+```text
+users
+    ↓
+properties
+    ↓
+property_images
+
+townships
+    ↓
+properties
+
+properties
+    ↓
+amenities
+
+users
+    ↓
+leads
+    ↓
+site_visits
+```
+
+A simplified structure:
+
+```text
+USERS
+ ├── id
+ ├── name
+ ├── email
+ └── phone
+
+TOWNSHIPS
+ ├── id
+ ├── name
+ └── location
+
+PROPERTIES
+ ├── id
+ ├── township_id
+ ├── title
+ ├── price
+ └── status
+
+PROPERTY_IMAGES
+ ├── id
+ ├── property_id
+ └── image_url
+
+LEADS
+ ├── id
+ ├── user_id
+ ├── property_id
+ └── status
+
+SITE_VISITS
+ ├── id
+ ├── lead_id
+ ├── visit_date
+ └── status
+```
+
+Relationships:
+
+```text
+Township 1 ─── N Properties
+
+Property 1 ─── N Property Images
+
+User 1 ─── N Leads
+
+Property 1 ─── N Leads
+
+Lead 1 ─── N Site Visits
+```
+
+This is the kind of database thinking you need when designing backend applications.
+
+---
+
+# 39. Database Design Interview Questions
+
+Some common interview questions are:
+
+### Basic
+
+1. What is database design?
+2. What is a database schema?
+3. What is a table?
+4. What is a primary key?
+5. What is a foreign key?
+6. What is normalization?
+7. What is denormalization?
+8. What is an ER diagram?
+9. What are 1:1, 1:N and M:N relationships?
+10. What is an index?
+
+### Intermediate
+
+11. Explain 1NF, 2NF and 3NF.
+12. What is referential integrity?
+13. What is a composite key?
+14. What is a composite index?
+15. What is a surrogate key?
+16. What are database constraints?
+17. What is cascading?
+18. What is soft delete?
+19. How would you design an e-commerce database?
+20. How would you optimize a slow database query?
+
+### Advanced
+
+21. How do you design a database for millions of records?
+22. When would you denormalize?
+23. How do indexes affect INSERT/UPDATE operations?
+24. How do you identify missing indexes?
+25. How do you handle historical data?
+26. How would you design database transactions?
+27. How would you handle concurrent updates?
+28. When would you use partitioning?
+29. How would you scale a database?
+30. How do you maintain data consistency across related tables?
+
+---
+
+# 40. The Most Important Concept
+
+When designing any database, ask these **7 questions**:
+
+```text
+1. What entities do I have?
+        ↓
+2. What data does each entity contain?
+        ↓
+3. What is the primary key?
+        ↓
+4. How are entities related?
+        ↓
+5. Where should foreign keys go?
+        ↓
+6. Is there unnecessary duplication?
+        ↓
+7. Which queries need to be fast?
+```
+
+If you can answer these seven questions correctly, you can design the basic database structure for most CRUD/backend applications.
+
+### Short definition for exam/interview
+
+> **Database design is the process of organizing data into tables, attributes, keys, relationships, constraints, and indexes so that data can be stored efficiently, retrieved easily, and maintained consistently.**
+    </script>
+
+    <script>
+        // Render Markdown
+        const markdownContent = document.getElementById('markdown-content').textContent;
+        document.getElementById('content').innerHTML = marked.parse(markdownContent);
+        
+        // Apply syntax highlighting
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    </script>
+</body>
+</html>
