@@ -371,6 +371,139 @@
       </div>
     </div>
 
+    <!-- SECTION 7: IS IT A CRM? -->
+    <div class="card" id="crm-question">
+      <h3 class="card-title">🤔 7. Is AiSensy a CRM?</h3>
+      <p>
+        AiSensy is a <strong>WhatsApp marketing and engagement platform built on the official WhatsApp Business API</strong>. It isn't a full CRM in the traditional sense, though it has some CRM-like features.
+      </p>
+
+      <div class="grid-2">
+        <div class="feature-box">
+          <strong style="color: var(--accent-cyan); font-size: 1.05rem;">What it is</strong>
+          <ul style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; padding-left: 1rem;">
+            <li>An AI-first WhatsApp Marketing Platform.</li>
+            <li>An Official WhatsApp Business Solution Partner (BSP) &mdash; a Meta-approved provider.</li>
+          </ul>
+        </div>
+        <div class="feature-box">
+          <strong style="color: var(--accent-emerald); font-size: 1.05rem;">Where the CRM part comes in</strong>
+          <ul style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; padding-left: 1rem;">
+            <li>Contact import, tags, attributes, segmentation, and chat routing.</li>
+            <li>A basic contact and conversation manager, but lacks deal pipelines and forecasting.</li>
+            <li>Integrates with actual CRMs (e.g., LeadSquared, Shopify).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tier-box public-tier" style="margin-top: 1rem;">
+        <div class="tier-header">
+          <span class="tier-name">What you can do with it</span>
+        </div>
+        <ul style="font-size: 0.9rem; color: var(--text-muted);">
+          <li>Broadcast marketing messages (offers, coupons, carousels) and schedule them.</li>
+          <li>Build no-code chatbots and AI chatbots.</li>
+          <li>Run multi-agent live chat.</li>
+          <li>Run Click-to-WhatsApp ads on Facebook and Instagram.</li>
+          <li>Collect payments (WhatsApp Pay, Razorpay, PayU).</li>
+          <li>Sell products via WhatsApp catalog.</li>
+          <li>Track campaign results (read, reply, and click rates).</li>
+        </ul>
+      </div>
+
+      <div class="loophole-box" style="border-left-color: var(--accent-blue);">
+        <div class="loophole-title" style="color: var(--accent-blue);">💰 Cost Breakdown</div>
+        <ul style="font-size: 0.88rem; color: #93c5fd; margin-bottom: 0; padding-left: 1rem;">
+          <li>Free plan and 14-day trial available. No charge for obtaining the API through them.</li>
+          <li>Meta charges per message: ~₹1.09/marketing, ~₹0.145/utility & auth. Replies to user messages are free.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SECTION 8: DIRECT API VS AISENSY -->
+    <div class="card" id="direct-vs-platform">
+      <h3 class="card-title">🛤️ 8. Direct Meta API vs. Using a Platform</h3>
+      <p>
+        You can use the WhatsApp Business Platform (Cloud API) directly from Meta. Platforms like AiSensy act as a layer on top of it. Here is a breakdown of what that entails.
+      </p>
+
+      <div class="grid-2">
+        <div class="feature-box">
+          <strong style="color: var(--accent-cyan); font-size: 1.05rem;">What you get directly from Meta</strong>
+          <ul style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; padding-left: 1rem;">
+            <li>Access to the hosted Cloud API.</li>
+            <li>No subscription fee; only Meta's per-message charges.</li>
+            <li>Full control over data, logic, and integrations.</li>
+            <li>Meta's rules still apply (templates, limits, opt-ins).</li>
+          </ul>
+        </div>
+        <div class="feature-box">
+          <strong style="color: var(--accent-red); font-size: 1.05rem;">What you'd have to build yourself</strong>
+          <ul style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem; padding-left: 1rem;">
+            <li>A backend for sending/receiving webhooks.</li>
+            <li>A template manager and a shared inbox UI.</li>
+            <li>Contact storage, tags, segmentation, and broadcasting logic (retries, limits).</li>
+            <li>Chatbot logic and analytics dashboards.</li>
+            <li>Verification and green tick applications.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4 style="color:#fff; margin: 1.5rem 0 0.75rem 0;">Trade-offs Comparison</h4>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Direct API</th>
+              <th>Platform like AiSensy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Monthly software cost</strong></td>
+              <td>None</td>
+              <td>Subscription</td>
+            </tr>
+            <tr>
+              <td><strong>Per-message cost</strong></td>
+              <td>Meta's rates</td>
+              <td>Meta's rates, sometimes with markup</td>
+            </tr>
+            <tr>
+              <td><strong>Setup time</strong></td>
+              <td>Days to weeks (development)</td>
+              <td>Minutes to hours</td>
+            </tr>
+            <tr>
+              <td><strong>Needs developers</strong></td>
+              <td>Yes</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td><strong>Customization</strong></td>
+              <td>Unlimited</td>
+              <td>Limited to their features</td>
+            </tr>
+            <tr>
+              <td><strong>Team inbox, bot, broadcasts</strong></td>
+              <td>You build them</td>
+              <td>Included</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mitigation-box" style="border-left-color: var(--accent-emerald);">
+        <div class="mitigation-title" style="color: var(--accent-emerald);">🎯 Which route makes sense?</div>
+        <ul style="font-size: 0.88rem; color: #a7f3d0; margin-bottom: 0; padding-left: 1rem;">
+          <li><strong>Go direct:</strong> Have developers, need deep CRM/app integration, large volume, full ownership.</li>
+          <li><strong>Use a platform:</strong> Team is marketing/support, want to launch fast, avoid building UI tools.</li>
+          <li><strong>Middle route:</strong> Use BSP's API only, or build inbox on Cloud API with open-source tools like Chatwoot.</li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </body>
 </html>

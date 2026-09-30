@@ -9,80 +9,200 @@
     <!-- Highlight.js for code syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-            --heading-color: #1a1a1a;
-            --accent-color: #3498db;
-            --border-color: #e1e4e8;
+            --bg-main: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.9);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-accent: rgba(56, 189, 248, 0.3);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-cyan: #38bdf8;
+            --accent-purple: #a855f7;
+            --accent-emerald: #34d399;
+            --accent-amber: #fbbf24;
+            --accent-rose: #f43f5e;
+            
+            --gradient-primary: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+            --gradient-card: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.6));
+            --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.15);
+            
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+            --font-code: 'Fira Code', monospace;
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: var(--font-main);
             line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
         }
-        .container {
-            max-width: 900px;
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
-            background-color: #ffffff;
-            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-btn {
+            padding: 0.4rem 0.85rem;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        h1, h2, h3, h4 {
-            color: var(--heading-color);
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
-        }
-        h1 { font-size: 2.2em; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
-        h2 { font-size: 1.8em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        blockquote {
-            border-left: 4px solid var(--accent-color);
-            background-color: #eaf2f8;
-            margin: 1.5em 0;
-            padding: 15px 20px;
-            border-radius: 0 4px 4px 0;
-            font-style: italic;
-            color: #555;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5em;
-        }
-        th, td {
-            padding: 12px;
             border: 1px solid var(--border-color);
-            text-align: left;
+            background: rgba(30, 41, 59, 0.5);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
-        th { background-color: #f8f9fa; }
-        code {
-            background-color: rgba(0, 0, 0, 0.05);
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-family: Consolas, 'Courier New', monospace;
-            color: #e06c75;
+        .nav-btn:hover {
+            color: #fff;
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.4);
         }
-        pre {
-            background-color: #282c34;
-            padding: 15px;
-            border-radius: 6px;
+        .nav-btn.hub-link {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: rgba(168, 85, 247, 0.4);
+            color: #fff;
+        }
+
+        main { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem 6rem; }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 3rem 1.5rem;
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 760px;
+            margin: 0 auto 0.75rem;
+        }
+        
+        .hero-section > *:last-child {
+            margin-bottom: 0;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            scroll-margin-top: 100px;
+        }
+
+        h2 { font-family: var(--font-heading); font-size: 1.5rem; color: #f8fafc; margin-bottom: 1rem; }
+        h3 { font-family: var(--font-heading); font-size: 1.25rem; color: var(--accent-cyan); margin-bottom: 0.75rem; margin-top: 1.5rem; }
+        p { margin-bottom: 1rem; color: var(--text-secondary); }
+        ul, ol { margin-bottom: 1rem; margin-left: 1.5rem; color: var(--text-secondary); }
+        li { margin-bottom: 0.25rem; }
+
+        .code-container {
+            background: #090d16;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
             overflow-x: auto;
-            margin-bottom: 1.5em;
+            color: #e2e8f0;
+            white-space: pre-wrap;
         }
-        pre code {
-            background-color: transparent;
-            padding: 0;
-            color: #abb2bf;
+        
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        th, td { padding: 1rem; border: 1px solid var(--border-color); text-align: left; }
+        th { background: rgba(30, 41, 59, 0.9); color: var(--accent-cyan); font-weight: 600; }
+        tr:nth-child(even) td { background: rgba(15, 23, 42, 0.4); }
+
+        blockquote {
+            border-left: 4px solid var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
+            color: var(--text-primary);
+            font-weight: 500;
         }
+        strong { color: var(--text-primary); }
     </style>
 </head>
 <body>
-    <div class="container" id="content"></div>
+    <header>
+        <div class="nav-container">
+            <a href="learning.html" class="logo">
+                <span>🗄️</span> Database Mentor
+            </a>
+            <div class="nav-links">
+                <a href="learning.html" class="nav-btn hub-link">📚 Learning Hub</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="content"></main>
 
     <!-- The Markdown Content -->
     <script type="text/template" id="markdown-content">
@@ -1943,12 +2063,63 @@ If you can answer these seven questions correctly, you can design the basic data
     </script>
 
     <script>
-        // Render Markdown
+        // Parse Markdown
         const markdownContent = document.getElementById('markdown-content').textContent;
-        document.getElementById('content').innerHTML = marked.parse(markdownContent);
+        const rawHtml = marked.parse(markdownContent);
+        
+        const temp = document.createElement('div');
+        temp.innerHTML = rawHtml;
+        
+        const content = document.getElementById('content');
+        let currentCard = null;
+        let isHero = true;
+        
+        const heroSection = document.createElement('section');
+        heroSection.className = 'hero-section';
+        
+        Array.from(temp.children).forEach(el => {
+            if (el.tagName === 'HR') {
+                if (isHero) {
+                    isHero = false;
+                    content.appendChild(heroSection);
+                }
+                return; // skip HRs
+            }
+            
+            if (isHero) {
+                if (el.tagName === 'H1') {
+                    el.className = 'hero-title';
+                } else if (el.tagName === 'P' || el.tagName === 'BLOCKQUOTE') {
+                    el.className = 'hero-subtitle';
+                }
+                heroSection.appendChild(el);
+            } else {
+                if (el.tagName === 'H1') {
+                    if (currentCard) content.appendChild(currentCard);
+                    currentCard = document.createElement('div');
+                    currentCard.className = 'card';
+                    const h2 = document.createElement('h2');
+                    h2.innerHTML = el.innerHTML;
+                    currentCard.appendChild(h2);
+                } else if (currentCard) {
+                    if (el.tagName === 'PRE') {
+                        const code = document.createElement('div');
+                        code.className = 'code-container';
+                        code.innerHTML = el.innerHTML;
+                        currentCard.appendChild(code);
+                    } else {
+                        currentCard.appendChild(el);
+                    }
+                }
+            }
+        });
+        
+        if (currentCard) {
+            content.appendChild(currentCard);
+        }
         
         // Apply syntax highlighting
-        document.querySelectorAll('pre code').forEach((block) => {
+        document.querySelectorAll('pre code, .code-container code').forEach((block) => {
             hljs.highlightElement(block);
         });
     </script>
